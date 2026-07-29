@@ -1719,21 +1719,21 @@ $$ \\left(-\\frac{2}{3}\\right)^{2}=\\frac{4}{9}, \\qquad \\left(-\\frac{2}{3}\\
 <li>Sviluppare le potenze, ricordando che l'esponente agisce su tutta la base racchiusa in parentesi.</li>
 <li>Risolvere l'interno delle parentesi, riducendo ogni volta il risultato ai minimi termini.</li>
 <li>Eseguire prodotti e quozienti, semplificando <em>prima</em> di moltiplicare.</li>
-<li>Eseguire somme e differenze con il minimo comune denominatore.</li>
+<li>Eseguire somme e differenze con il <strong>metodo a frazione unica</strong>: nuovo denominatore $m=\\mathrm{mcm}$ dei denominatori, e al numeratore la somma indicata dei prodotti di ciascun numeratore per $m$ diviso il rispettivo denominatore; poi svolgere e semplificare.</li>
 </ol>
 
 <h3>Esempio svolto</h3>
 <p>$\\left(\\frac{3}{4}-\\frac{1}{2}\\right)^{2}\\cdot\\frac{4}{3}+\\frac{1}{3}$</p>
 <ul>
-<li>parentesi: $\\frac{3}{4}-\\frac{1}{2}=\\frac{3}{4}-\\frac{2}{4}=\\frac{1}{4}$;</li>
+<li>parentesi: $\\frac{3}{4}-\\frac{1}{2}=\\frac{3\\cdot 1-1\\cdot 2}{4}=\\frac{3-2}{4}=\\frac{1}{4}$;</li>
 <li>potenza: $\\left(\\frac{1}{4}\\right)^{2}=\\frac{1}{16}$;</li>
 <li>prodotto: $\\frac{1}{16}\\cdot\\frac{4}{3}=\\frac{1}{12}$;</li>
-<li>somma: $\\frac{1}{12}+\\frac{1}{3}=\\frac{1}{12}+\\frac{4}{12}=\\frac{5}{12}$.</li>
+<li>somma: $\\frac{1}{12}+\\frac{1}{3}=\\frac{1\\cdot 1+1\\cdot 4}{12}=\\frac{1+4}{12}=\\frac{5}{12}$.</li>
 </ul>
 
 <h3>La linea di frazione come parentesi</h3>
 <p>In una frazione complessa la linea principale racchiude implicitamente numeratore e denominatore:</p>
-$$ \\dfrac{\\ \\frac{1}{2}+\\frac{1}{3}\\ }{\\ \\frac{5}{6}\\ }=\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}=\\frac{5}{6}\\div\\frac{5}{6}=1 $$
+$$ \\dfrac{\\ \\frac{1}{2}+\\frac{1}{3}\\ }{\\ \\frac{5}{6}\\ }=\\left(\\frac{1\\cdot 3+1\\cdot 2}{6}\\right)\\div\\frac{5}{6}=\\frac{5}{6}\\div\\frac{5}{6}=1 $$
 <p>Va quindi trattata come se ci fossero parentesi sopra e sotto, anche quando non sono scritte.</p>
 
 <div class="box care">
@@ -1756,20 +1756,20 @@ $$ \\dfrac{\\ \\frac{1}{2}+\\frac{1}{3}\\ }{\\ \\frac{5}{6}\\ }=\\left(\\frac{1}
       h:"La moltiplicazione ha priorità sull'addizione: nessuna parentesi la modifica.",
       s:"$\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{1}{2}$, quindi $\\frac{1}{2}+\\frac{1}{2}=1$."},
      {t:"Calcola $\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}$.",
-      h:"Prima la parentesi, con denominatore comune 6; poi moltiplica per il reciproco.",
-      s:"$\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$."},
+      h:"Prima la parentesi a frazione unica con $m=\\mathrm{mcm}(2,3)=6$ ($6:2=3$, $6:3=2$); poi moltiplica per il reciproco.",
+      s:"Parentesi: $\\frac{1}{2}+\\frac{1}{3}=\\frac{1\\cdot 3+1\\cdot 2}{6}=\\frac{5}{6}$; quindi $\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$."},
      {t:"Calcola $\\left(\\frac{2}{3}\\right)^{2}-\\frac{1}{9}$.",
-      h:"Sviluppa la potenza, poi riduci allo stesso denominatore.",
-      s:"$\\frac{4}{9}-\\frac{1}{9}=\\frac{3}{9}=\\frac{1}{3}$."},
+      h:"Sviluppa la potenza; i denominatori sono già uguali, quindi basta la differenza dei numeratori su 9.",
+      s:"$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$, quindi $\\frac{4}{9}-\\frac{1}{9}=\\frac{4-1}{9}=\\frac{3}{9}=\\frac{1}{3}$."},
      {t:"Calcola $\\left[\\left(\\frac{3}{4}-\\frac{1}{2}\\right)\\cdot\\frac{4}{3}\\right]+\\frac{1}{3}$.",
-      h:"Parentesi tonda, poi quadra, poi la somma finale.",
-      s:"$\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$, quindi $\\frac{1}{3}+\\frac{1}{3}=\\frac{2}{3}$."},
+      h:"Parentesi tonda a frazione unica ($m=4$), poi quadra, poi la somma finale.",
+      s:"Tonda: $\\frac{3}{4}-\\frac{1}{2}=\\frac{3\\cdot 1-1\\cdot 2}{4}=\\frac{1}{4}$; quadra: $\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$; somma: $\\frac{1}{3}+\\frac{1}{3}=\\frac{1+1}{3}=\\frac{2}{3}$."},
      {t:"Calcola $\\left(\\frac{1}{2}-\\frac{1}{3}\\right)^{-1}$.",
-      h:"Prima la parentesi; poi l'esponente $-1$ equivale al reciproco.",
-      s:"$\\frac{1}{2}-\\frac{1}{3}=\\frac{1}{6}$, e $\\left(\\frac{1}{6}\\right)^{-1}=6$."},
+      h:"Prima la parentesi a frazione unica ($m=6$); poi l'esponente $-1$ equivale al reciproco.",
+      s:"$\\frac{1}{2}-\\frac{1}{3}=\\frac{1\\cdot 3-1\\cdot 2}{6}=\\frac{1}{6}$, e $\\left(\\frac{1}{6}\\right)^{-1}=6$."},
      {t:"Calcola $\\dfrac{\\ \\frac{3}{4}-\\frac{1}{6}\\ }{\\ \\frac{7}{12}\\ }+\\left(\\frac{1}{2}\\right)^{3}$.",
-      h:"Tratta la linea principale come una parentesi: numeratore per intero diviso denominatore. Poi somma la potenza.",
-      s:"Numeratore: $\\frac{9}{12}-\\frac{2}{12}=\\frac{7}{12}$; quindi $\\frac{7}{12}\\div\\frac{7}{12}=1$. Infine $1+\\frac{1}{8}=\\frac{9}{8}$."}
+      h:"Tratta la linea principale come una parentesi: il numeratore a frazione unica con $m=\\mathrm{mcm}(4,6)=12$ ($12:4=3$, $12:6=2$), diviso il denominatore. Poi somma la potenza.",
+      s:"Numeratore: $\\frac{3}{4}-\\frac{1}{6}=\\frac{3\\cdot 3-1\\cdot 2}{12}=\\frac{9-2}{12}=\\frac{7}{12}$; quindi $\\frac{7}{12}\\div\\frac{7}{12}=1$. Infine $1+\\frac{1}{8}=\\frac{1\\cdot 8+1\\cdot 1}{8}=\\frac{9}{8}$."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
   ]
@@ -2055,16 +2055,16 @@ espressioni:[
   w:"Prima il prodotto: $\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{1}{2}$; poi $\\frac{1}{2}+\\frac{1}{2}=1$. Il valore $\\frac{7}{8}$ si ottiene eseguendo per prima la somma, che qui non ha la priorità."},
  {q:"Calcola $\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}$.",
   o:["$1$","$\\frac{25}{36}$","$\\frac{5}{9}$","$\\frac{36}{25}$"],c:0,type:"problema",
-  w:"La parentesi vale $\\frac{5}{6}$, quindi $\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$. Il valore $\\frac{25}{36}$ si ottiene moltiplicando invece di dividere."},
+  w:"Parentesi a frazione unica ($m=6$): $\\frac{1}{2}+\\frac{1}{3}=\\frac{1\\cdot 3+1\\cdot 2}{6}=\\frac{5}{6}$, quindi $\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$. Il valore $\\frac{25}{36}$ si ottiene moltiplicando invece di dividere."},
  {q:"Calcola $\\left(\\frac{2}{3}\\right)^{2}-\\frac{1}{9}$.",
   o:["$\\frac{1}{3}$","$\\frac{5}{9}$","$\\frac{1}{9}$","$\\frac{4}{3}$"],c:0,type:"problema",
-  w:"$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$, quindi $\\frac{4}{9}-\\frac{1}{9}=\\frac{3}{9}=\\frac{1}{3}$. Ricorda di ridurre sempre il risultato finale."},
+  w:"$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$; denominatori già uguali, quindi $\\frac{4}{9}-\\frac{1}{9}=\\frac{4-1}{9}=\\frac{3}{9}=\\frac{1}{3}$. Ricorda di ridurre sempre il risultato finale."},
  {q:"Calcola $\\left[\\left(\\frac{3}{4}-\\frac{1}{2}\\right)\\cdot\\frac{4}{3}\\right]+\\frac{1}{3}$.",
   o:["$\\frac{2}{3}$","$\\frac{1}{3}$","$\\frac{5}{12}$","$\\frac{7}{12}$"],c:0,type:"problema",
-  w:"Tonda: $\\frac{3}{4}-\\frac{2}{4}=\\frac{1}{4}$; quadra: $\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$; somma finale: $\\frac{1}{3}+\\frac{1}{3}=\\frac{2}{3}$."},
+  w:"Tonda ($m=4$): $\\frac{3}{4}-\\frac{1}{2}=\\frac{3\\cdot 1-1\\cdot 2}{4}=\\frac{1}{4}$; quadra: $\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$; somma finale: $\\frac{1}{3}+\\frac{1}{3}=\\frac{1+1}{3}=\\frac{2}{3}$."},
  {q:"Calcola $\\left(\\frac{1}{2}-\\frac{1}{3}\\right)^{-1}$.",
   o:["$6$","$\\frac{1}{6}$","$-6$","$\\frac{5}{6}$"],c:0,type:"problema",
-  w:"Prima la parentesi: $\\frac{3}{6}-\\frac{2}{6}=\\frac{1}{6}$; poi l'esponente $-1$, che indica il reciproco: $6$. L'esponente negativo non cambia il segno del risultato."}
+  w:"Parentesi a frazione unica ($m=6$): $\\frac{1}{2}-\\frac{1}{3}=\\frac{1\\cdot 3-1\\cdot 2}{6}=\\frac{1}{6}$; poi l'esponente $-1$, che indica il reciproco: $6$. L'esponente negativo non cambia il segno del risultato."}
 ]
 };
 
