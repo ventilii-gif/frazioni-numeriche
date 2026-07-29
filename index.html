@@ -633,16 +633,17 @@ const SIMS={};
 SIMS.semplificazione={
   note:"Le celle colorate scorrono con un'onda luminosa continua; nella fase centrale i separatori interni a ciascun gruppo svaniscono e le celle si fondono: è esattamente ciò che accade dividendo numeratore e denominatore per il MCD.",
   controls:[
-    {id:"n",label:"Numeratore",min:1,max:24,value:8,cls:"fa"},
+    {id:"n",label:"Numeratore",min:-24,max:24,value:8,cls:"fa"},
     {id:"d",label:"Denominatore",min:1,max:24,value:12,cls:"fb"}
   ],
   onChange(v,api){
     const g=gcd(v.n,v.d)||1;
-    api.setReadout("$"+texFrac(v.n,v.d)+" \\;=\\; "+texFrac(v.n/g,v.d/g)+"$ &nbsp;&nbsp; <span style='font-size:.85rem;color:var(--muted)'>MCD("+v.n+", "+v.d+") = "+g+(g===1?" &rarr; già ridotta":"")+"</span>");
+    api.setReadout("$"+texFrac(v.n,v.d)+" \\;=\\; "+texFrac(v.n/g,v.d/g)+"$ &nbsp;&nbsp; <span style='font-size:.85rem;color:var(--muted)'>MCD(|"+v.n+"|, "+v.d+") = "+g+(g===1?" &rarr; già ridotta":"")+(v.n<0?" &middot; il segno resta al numeratore":"")+"</span>");
   },
   draw(ctx,W,H,t,v,api){
     const n=v.n,d=v.d,g=gcd(n,d)||1;
     const nd=d/g, nn=n/g;
+    const an=Math.abs(n), ann=Math.abs(nn);
     const ph=phase(t,[1.6,1.9,1.8]);
     let p=0;
     if(ph.i===1)p=easeInOut(ph.p); else if(ph.i===2)p=1;
@@ -651,17 +652,17 @@ SIMS.semplificazione={
     const y1=H*0.24, y2=H*0.66;
 
     /* barra originale con fusione progressiva dei gruppi */
-    label(ctx,"frazione di partenza",pad,y1-bh*0.5-16,12,THEME.muted);
-    drawBar(ctx,pad,y1-bh/2,bw,bh,d,n,p,g,t,THEME.fa,THEME["fa-soft"]);
-    label(ctx,n+"/"+d,pad+bw+6,y1,13,THEME.fa,"left",700);
+    label(ctx,"frazione di partenza"+(n<0?" (negativa)":""),pad,y1-bh*0.5-16,12,n<0?THEME.warn:THEME.muted);
+    drawBar(ctx,pad,y1-bh/2,bw,bh,d,an,p,g,t,THEME.fa,THEME["fa-soft"]);
+    label(ctx,(n<0?"-":"")+an+"/"+d,pad+bw+6,y1,13,THEME.fa,"left",700);
 
     /* barra ridotta */
     label(ctx,"frazione ridotta ai minimi termini",pad,y2-bh*0.5-16,12,THEME.muted);
-    drawBar(ctx,pad,y2-bh/2,bw,bh,nd,nn,1,1,t,THEME.accent,THEME["accent-soft"]);
-    label(ctx,nn+"/"+nd,pad+bw+6,y2,13,THEME.accent,"left",700);
+    drawBar(ctx,pad,y2-bh/2,bw,bh,nd,ann,1,1,t,THEME.accent,THEME["accent-soft"]);
+    label(ctx,(nn<0?"-":"")+ann+"/"+nd,pad+bw+6,y2,13,THEME.accent,"left",700);
 
     /* linea di corrispondenza: stessa porzione di intero */
-    const xEnd=pad+bw*(n/d);
+    const xEnd=pad+bw*Math.min(1,an/d);
     ctx.save();
     ctx.setLineDash([5,5]);ctx.lineWidth=1.5;
     ctx.strokeStyle=hex2rgba(THEME.accent,.55+.25*Math.sin(t*2.4));
@@ -740,41 +741,60 @@ SIMS.addizione={
     drawRow(yA,b,a,THEME.fa,"A = "+a+"/"+b,conv,m,A2);
     drawRow(yB,e,c,THEME.fb,"B = "+c+"/"+e,conv,m,B2);
 
-    /* barra risultato */
+    /* barra risultato — in sottrazione ha un asse dello zero, così un
+       risultato negativo si estende a sinistra invece di fermarsi a 0 */
+    const finalNeg = !add && (A2-B2)<0;
     if(merge>0){
-      const num = add ? A2+B2*merge : A2-B2*merge;
+      const posW = add ? bw : bw*0.72;      /* zona positiva */
+      const negW = bw - posW;               /* zona negativa (solo sottrazione) */
+      const zx = bx + negW;                 /* posizione dello zero */
+      const cw = posW/m;
+      const netCells = add ? A2+B2*merge : A2-B2*merge;   /* può diventare < 0 */
       ctx.save();ctx.globalAlpha=Math.min(1,merge*1.6);
       roundRect(ctx,bx,yR-bh/2,bw,bh,8);ctx.fillStyle=THEME.surface;ctx.fill();
-      const cw=bw/m;
-      /* parti provenienti da A */
-      const nA=add?A2:Math.max(0,A2-B2*merge);
       ctx.save();roundRect(ctx,bx,yR-bh/2,bw,bh,8);ctx.clip();
-      ctx.fillStyle=hex2rgba(THEME.fa,.32);
-      ctx.fillRect(bx,yR-bh/2,cw*Math.min(nA,m),bh);
       if(add){
+        ctx.fillStyle=hex2rgba(THEME.fa,.32);
+        ctx.fillRect(zx,yR-bh/2,cw*A2,bh);
         ctx.fillStyle=hex2rgba(THEME.fb,.32);
-        ctx.fillRect(bx+cw*A2,yR-bh/2,cw*Math.min(B2*merge,m),bh);
+        ctx.fillRect(zx+cw*A2,yR-bh/2,cw*B2*merge,bh);
       }else{
-        /* le parti tolte restano visibili come tratteggio */
+        /* blocco A (positivo) a destra dello zero */
+        ctx.fillStyle=hex2rgba(THEME.fa,.32);
+        ctx.fillRect(zx,yR-bh/2,cw*A2,bh);
+        /* parte tolta: tratteggio da destra verso sinistra */
+        const xR=zx+cw*A2, xLand=zx+cw*netCells;
         ctx.strokeStyle=hex2rgba(THEME.fb,.7);ctx.lineWidth=1.4;
-        const x0=bx+cw*nA, x1=bx+cw*A2;
-        for(let x=x0;x<x1;x+=7){ctx.beginPath();ctx.moveTo(x,yR-bh/2);ctx.lineTo(x-bh,yR+bh/2);ctx.stroke();}
+        for(let x=xLand;x<xR;x+=7){ctx.beginPath();ctx.moveTo(x,yR-bh/2);ctx.lineTo(x-bh,yR+bh/2);ctx.stroke();}
+        /* risultato negativo: blocco a sinistra dello zero */
+        if(netCells<0){
+          ctx.fillStyle=hex2rgba(THEME.warn,.32);
+          ctx.fillRect(xLand,yR-bh/2,zx-xLand,bh);
+        }
       }
-      shimmer(ctx,bx,yR-bh/2,bw,bh,t,hex2rgba(THEME.accent,.22),.7);
+      shimmer(ctx,zx,yR-bh/2,posW,bh,t,hex2rgba(THEME.accent,.18),.7);
       ctx.restore();
-      for(let i=1;i<m;i++){
-        ctx.strokeStyle=hex2rgba(THEME["line-strong"],.8);ctx.lineWidth=1;
-        ctx.beginPath();ctx.moveTo(bx+cw*i,yR-bh/2+2);ctx.lineTo(bx+cw*i,yR+bh/2-2);ctx.stroke();
+      /* griglia unitaria a destra dello zero */
+      for(let i=1;i<=m;i++){
+        ctx.strokeStyle=hex2rgba(THEME["line-strong"],i===m?.9:.7);ctx.lineWidth=i===m?1.4:1;
+        ctx.beginPath();ctx.moveTo(zx+cw*i,yR-bh/2+2);ctx.lineTo(zx+cw*i,yR+bh/2-2);ctx.stroke();
       }
       roundRect(ctx,bx,yR-bh/2,bw,bh,8);ctx.lineWidth=2.4;ctx.strokeStyle=THEME.accent;ctx.stroke();
-      label(ctx,(add?A2+B2:A2-B2)+"/"+m,bx+bw+6,yR,13,THEME.accent,"left",700);
+      /* asse dello zero, solo in sottrazione */
+      if(!add){
+        ctx.strokeStyle=hex2rgba(THEME.ink,.8);ctx.lineWidth=2.2;
+        ctx.beginPath();ctx.moveTo(zx,yR-bh/2-7);ctx.lineTo(zx,yR+bh/2+7);ctx.stroke();
+        label(ctx,"0",zx,yR+bh/2+17,12,THEME.ink,"center",700);
+        label(ctx,"1",zx+posW,yR+bh/2+17,12,THEME.muted,"center",600);
+      }
+      label(ctx,(add?A2+B2:A2-B2)+"/"+m,bx+bw+6,yR,13,finalNeg?THEME.warn:THEME.accent,"left",700);
       ctx.restore();
     }
     const RR=add?F(a,b).add(F(c,e)):F(a,b).sub(F(c,e));
     label(ctx,["stesse frazioni, denominatori diversi",
                "riduzione allo stesso denominatore: "+m,
-               add?"le parti si uniscono":"le parti si tolgono",
-               "risultato: "+(add?A2+B2:A2-B2)+"/"+m+" = "+RR.txt()][ph.i],bx,H*0.955,12.5,THEME.muted);
+               add?"le parti si uniscono":(finalNeg?"si tolgono più parti di quante presenti: si va sotto lo zero":"le parti si tolgono"),
+               "risultato: "+(add?A2+B2:A2-B2)+"/"+m+" = "+RR.txt()+(finalNeg?"  (negativo)":"")][ph.i],bx,H*0.955,12.5,finalNeg&&ph.i>=2?THEME.warn:THEME.muted);
 
     function drawRow(y,den,num,col,cap,conv,m,num2){
       const showDen = conv>0.5?m:den;
@@ -809,18 +829,22 @@ SIMS.addizione={
 SIMS.moltiplicazione={
   note:"Il quadrato vale 1. Le colonne colorate sono la prima frazione, le righe la seconda: il prodotto è la parte comune, cioè «frazione di frazione». Le celle comuni sono ac su un totale di bd.",
   controls:[
-    {id:"a",label:"Numeratore A",min:1,max:8,value:2,cls:"fa"},
+    {id:"a",label:"Numeratore A",min:-8,max:8,value:2,cls:"fa"},
     {id:"b",label:"Denominatore A",min:2,max:9,value:3,cls:"fa"},
-    {id:"c",label:"Numeratore B",min:1,max:8,value:3,cls:"fb"},
+    {id:"c",label:"Numeratore B",min:-8,max:8,value:3,cls:"fb"},
     {id:"e",label:"Denominatore B",min:2,max:9,value:4,cls:"fb"}
   ],
   onChange(v,api){
     const R=F(v.a,v.b).mul(F(v.c,v.e));
+    const na=(v.a<0?"("+v.a+")":""+v.a), nc=(v.c<0?"("+v.c+")":""+v.c);
     api.setReadout("$"+texFrac(v.a,v.b)+"\\cdot"+texFrac(v.c,v.e)+"="+
-      "\\frac{"+v.a+"\\cdot"+v.c+"}{"+v.b+"\\cdot"+v.e+"}="+texFrac(v.a*v.c,v.b*v.e)+"="+R.tex()+"$");
+      "\\frac{"+na+"\\cdot"+nc+"}{"+v.b+"\\cdot"+v.e+"}="+texFrac(v.a*v.c,v.b*v.e)+"="+R.tex()+"$"+
+      ((v.a<0||v.c<0)?" &nbsp; <span style='font-size:.85rem;color:var(--muted)'>segni "+(v.a<0?"−":"+")+" e "+(v.c<0?"−":"+")+" → prodotto "+(((v.a<0)!==(v.c<0))?"negativo":"positivo")+"</span>":""));
   },
   draw(ctx,W,H,t,v,api){
-    const a=Math.min(v.a,v.b),b=v.b,c=Math.min(v.c,v.e),e=v.e;
+    const b=v.b,e=v.e,av=Math.abs(v.a),cv=Math.abs(v.c);
+    const a=Math.min(av,b),c=Math.min(cv,e);
+    const neg=(v.a<0)!==(v.c<0), icol=neg?THEME.warn:THEME.accent;
     const ph=phase(t,[1.5,1.5,2.6]);
     const S=Math.min(W*0.62,H*0.86);
     const x0=Math.max(14,W*0.06), y0=(H-S)/2;
@@ -841,17 +865,17 @@ SIMS.moltiplicazione={
     /* intersezione */
     if(pI>0){
       const iw=cw*a, ih=chh*c;
-      ctx.fillStyle=hex2rgba(THEME.accent,.34*pI);
+      ctx.fillStyle=hex2rgba(icol,.34*pI);
       ctx.fillRect(x0,y0,iw,ih);
       /* tratteggio animato in movimento */
       ctx.save();ctx.beginPath();ctx.rect(x0,y0,iw,ih);ctx.clip();
-      ctx.strokeStyle=hex2rgba(THEME.accent,.55);ctx.lineWidth=1.6;
+      ctx.strokeStyle=hex2rgba(icol,.55);ctx.lineWidth=1.6;
       const off=(t*26)%16;
       for(let x=x0-ih-off;x<x0+iw+ih;x+=16){
         ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+ih,y0+ih);ctx.stroke();
       }
       ctx.restore();
-      shimmer(ctx,x0,y0,iw,ih,t,hex2rgba(THEME.accent,.28),.9);
+      shimmer(ctx,x0,y0,iw,ih,t,hex2rgba(icol,.28),.9);
     }
     ctx.restore();
     /* griglia */
@@ -862,29 +886,34 @@ SIMS.moltiplicazione={
     ctx.restore();
 
     /* etichette laterali */
-    label(ctx,a+"/"+b+" della base",x0,y0-14,12.5,THEME.fa,"left",700);
+    label(ctx,(v.a<0?"-":"")+a+"/"+b+" della base",x0,y0-14,12.5,THEME.fa,"left",700);
     ctx.save();ctx.translate(x0-10,y0+S/2);ctx.rotate(-Math.PI/2);
-    label(ctx,c+"/"+e+" dell'altezza",0,0,12.5,THEME.fb,"center",700);ctx.restore();
+    label(ctx,(v.c<0?"-":"")+c+"/"+e+" dell'altezza",0,0,12.5,THEME.fb,"center",700);ctx.restore();
 
     /* pannello destro */
     const px=x0+S+22, pw=W-px-14;
     if(pw>96){
-      const R=F(a*c,b*e);
+      const R=F(v.a,v.b).mul(F(v.c,v.e));
       label(ctx,"celle totali: "+b+" × "+e+" = "+(b*e),px,y0+16,13,THEME.muted,"left",600);
-      label(ctx,"celle comuni: "+a+" × "+c+" = "+(a*c),px,y0+40,13,THEME.accent,"left",700);
-      label(ctx,"prodotto = "+(a*c)+"/"+(b*e),px,y0+68,14,THEME.accent,"left",700);
-      label(ctx,"ridotto = "+R.txt(),px,y0+90,14,THEME.accent,"left",700);
-      /* mini barra del valore */
-      const by=y0+120, bhh=14;
-      roundRect(ctx,px,by,Math.max(30,pw-10),bhh,6);
+      label(ctx,"celle comuni: "+a+" × "+c+" = "+(a*c),px,y0+40,13,icol,"left",700);
+      label(ctx,"prodotto = "+(neg?"−":"")+(a*c)+"/"+(b*e),px,y0+68,14,icol,"left",700);
+      label(ctx,"ridotto = "+R.txt(),px,y0+90,14,icol,"left",700);
+      /* mini barra del valore (grandezza) */
+      const by=y0+120, bhh=14, bwv=Math.max(30,pw-10);
+      roundRect(ctx,px,by,bwv,bhh,6);
       ctx.fillStyle=THEME.surface;ctx.fill();ctx.strokeStyle=THEME["line-strong"];ctx.lineWidth=1.5;ctx.stroke();
-      ctx.save();roundRect(ctx,px,by,Math.max(30,pw-10),bhh,6);ctx.clip();
-      ctx.fillStyle=hex2rgba(THEME.accent,.45);
-      ctx.fillRect(px,by,Math.max(30,pw-10)*R.v,bhh);
-      shimmer(ctx,px,by,Math.max(30,pw-10)*R.v,bhh,t,hex2rgba(THEME.accent,.3),1.1);
+      ctx.save();roundRect(ctx,px,by,bwv,bhh,6);ctx.clip();
+      ctx.fillStyle=hex2rgba(icol,.45);
+      ctx.fillRect(px,by,bwv*Math.min(1,Math.abs(R.v)),bhh);
+      shimmer(ctx,px,by,bwv*Math.min(1,Math.abs(R.v)),bhh,t,hex2rgba(icol,.3),1.1);
       ctx.restore();
-      label(ctx,"il prodotto di due frazioni minori di 1",px,by+34,11.5,THEME.muted,"left",500);
-      label(ctx,"è minore di entrambe",px,by+50,11.5,THEME.muted,"left",500);
+      if(neg){
+        label(ctx,"segni discordi: il prodotto è negativo",px,by+34,11.5,THEME.warn,"left",600);
+        label(ctx,"la grandezza è quella delle celle comuni",px,by+50,11.5,THEME.muted,"left",500);
+      }else{
+        label(ctx,"il prodotto di due frazioni minori di 1",px,by+34,11.5,THEME.muted,"left",500);
+        label(ctx,"è minore di entrambe",px,by+50,11.5,THEME.muted,"left",500);
+      }
     }
     label(ctx,["si evidenzia la prima frazione (colonne)","si evidenzia la seconda frazione (righe)","la parte comune è il prodotto"][ph.i],
       x0,y0+S+22,12.5,THEME.muted);
@@ -895,20 +924,26 @@ SIMS.moltiplicazione={
 SIMS.divisione={
   note:"La divisione risponde alla domanda: quante volte il divisore sta nel dividendo? Le unità ambra avanzano una alla volta lungo il segmento; l'ultima, se parziale, è tratteggiata e corrisponde alla parte frazionaria del quoziente.",
   controls:[
-    {id:"a",label:"Dividendo: numeratore",min:1,max:12,value:3,cls:"fa"},
+    {id:"a",label:"Dividendo: numeratore",min:-12,max:12,value:3,cls:"fa"},
     {id:"b",label:"Dividendo: denominatore",min:1,max:12,value:4,cls:"fa"},
-    {id:"c",label:"Divisore: numeratore",min:1,max:12,value:1,cls:"fb"},
+    {id:"c",label:"Divisore: numeratore",min:-12,max:12,value:1,cls:"fb"},
     {id:"e",label:"Divisore: denominatore",min:1,max:12,value:8,cls:"fb"}
   ],
   onChange(v,api){
+    if(v.c===0){ api.setReadout("<span style='color:var(--warn)'>Il divisore non può essere 0.</span>"); return; }
     const Q=F(v.a,v.b).div(F(v.c,v.e));
+    const neg=(v.a<0)!==(v.c<0);
+    const qmag=F(Math.abs(v.a),v.b).div(F(Math.abs(v.c),v.e));
     api.setReadout("$"+texFrac(v.a,v.b)+"\\div"+texFrac(v.c,v.e)+"="+texFrac(v.a,v.b)+"\\cdot"+texFrac(v.e,v.c)+"="+
-      texFrac(v.a*v.e,v.b*v.c)+"="+Q.tex()+"$ &nbsp; <span style='font-size:.85rem;color:var(--muted)'>il divisore ci sta "+Q.txt()+" volte</span>");
+      texFrac(v.a*v.e,v.b*v.c)+"="+Q.tex()+"$ &nbsp; <span style='font-size:.85rem;color:var(--muted)'>in grandezza ci sta "+qmag.txt()+" volte"+((v.a<0||v.c<0)?" · quoziente "+(neg?"negativo":"positivo"):"")+"</span>");
   },
   draw(ctx,W,H,t,v,api){
+    if(v.c===0){ label(ctx,"Il divisore non può essere 0.",W/2,H/2,14,THEME.warn,"center",700); return; }
     const A=F(v.a,v.b), B=F(v.c,v.e), Q=A.div(B);
-    const q=Q.v;
-    const L=Math.max(1,A.v);              /* estremo dell'asse */
+    const neg=(v.a<0)!==(v.c<0), qcol=neg?THEME.warn:THEME.accent;
+    const Am=Math.abs(A.v), Bm=Math.abs(B.v);
+    const q=Am/Bm;                        /* grandezza del quoziente */
+    const L=Math.max(1,Am);               /* estremo dell'asse */
     const pad=Math.min(34,W*0.06);
     const bw=W-pad*2, bx=pad;
     const yBar=H*0.34, bh=Math.min(52,H*0.17);
@@ -926,7 +961,7 @@ SIMS.divisione={
     ctx.restore();
 
     /* dividendo */
-    const dw=sc*A.v;
+    const dw=sc*Am;
     ctx.save();
     roundRect(ctx,bx,yBar-bh/2,dw,bh,7);
     ctx.fillStyle=hex2rgba(THEME.fa,.28);ctx.fill();
@@ -941,7 +976,7 @@ SIMS.divisione={
     const total=Math.min(full+(frac>1e-9?1:0),60);
     const speed = q>16?9:q>6?3.2:1.5;
     const shown=Math.min(total,Math.floor((t*speed)%(total+2.2)));
-    const uw=sc*B.v;
+    const uw=sc*Bm;
     for(let k=0;k<shown;k++){
       const isPartial = (k===full);
       const w = isPartial? uw*frac : uw;
@@ -971,8 +1006,9 @@ SIMS.divisione={
     /* riepilogo */
     const yy=H*0.93;
     label(ctx,"quoziente: "+A.txt()+" : "+B.txt()+" = "+A.txt()+" × "+F(v.e,v.c).txt()+" = "+Q.txt()
-      +(full>0? "   ("+full+" volte intere"+(frac>1e-9?" più una parte":"")+")":""),
-      bx,yy,13,THEME.accent,"left",700);
+      +(full>0? "   (grandezza: "+full+" volte"+(frac>1e-9?" più una parte":"")+")":"")
+      +(neg?"   · segni discordi → negativo":""),
+      bx,yy,13,qcol,"left",700);
   }
 };
 
@@ -980,30 +1016,35 @@ SIMS.divisione={
 SIMS.potenza={
   note:"A sinistra, ogni passo prende la frazione della figura precedente: l'area del rettangolo dopo n passi vale esattamente la potenza n-esima. A destra, i valori successivi sulla retta numerica: si vede subito se la potenza cresce o tende a zero.",
   controls:[
-    {id:"a",label:"Numeratore della base",min:1,max:9,value:2,cls:"fa"},
+    {id:"a",label:"Numeratore della base",min:-9,max:9,value:2,cls:"fa"},
     {id:"b",label:"Denominatore della base",min:1,max:9,value:3,cls:"fa"},
     {id:"k",label:"Esponente",min:-4,max:5,value:3,cls:"fb"}
   ],
   onChange(v,api){
     let txt;
+    const bn=(v.a<0?"("+v.a+")":""+v.a);   /* base fra parentesi se negativa */
     try{
       const R=F(v.a,v.b).pow(v.k);
-      if(v.k>=0) txt="$\\left("+texFrac(v.a,v.b)+"\\right)^{"+v.k+"}=\\frac{"+v.a+"^{"+v.k+"}}{"+v.b+"^{"+v.k+"}}="+R.tex()+"$";
+      if(v.k>=0) txt="$\\left("+texFrac(v.a,v.b)+"\\right)^{"+v.k+"}=\\frac{"+bn+"^{"+v.k+"}}{"+v.b+"^{"+v.k+"}}="+R.tex()+"$";
       else txt="$\\left("+texFrac(v.a,v.b)+"\\right)^{"+v.k+"}=\\left("+texFrac(v.b,v.a)+"\\right)^{"+(-v.k)+"}="+R.tex()+"$";
+      if(v.a<0) txt+=" &nbsp; <span style='font-size:.85rem;color:var(--muted)'>base negativa: segno "+(Math.abs(v.k)%2===0?"positivo (esponente pari)":"negativo (esponente dispari)")+"</span>";
     }catch(err){ txt="<span style='color:var(--warn)'>La base non può essere 0 con esponente negativo.</span>"; }
     api.setReadout(txt);
   },
   draw(ctx,W,H,t,v,api){
-    let r, kk=Math.abs(v.k), flipped=v.k<0;
-    if(v.a===0){ label(ctx,"Base nulla: con esponente negativo la potenza non è definita.",W/2,H/2,14,THEME.warn,"center",700); return; }
-    r = flipped ? v.b/v.a : v.a/v.b;
-    /* costruzione geometrica */
+    let kk=Math.abs(v.k), flipped=v.k<0;
+    if(v.a===0){ label(ctx,"Base nulla: le potenze valgono 0, e con esponente minore o uguale a 0 non sono definite.",W/2,H/2,14,THEME.warn,"center",700); return; }
+    const negBase=v.a<0;
+    /* base con segno e sua grandezza; la geometria usa la grandezza, il colore il segno */
+    const baseFr = flipped ? F(v.b,v.a) : F(v.a,v.b);   /* base effettiva (già ribaltata se k<0) */
+    const r = Math.abs(baseFr.v);                        /* grandezza del rapporto */
     const two = W>560;
     const PW = two? W*0.52 : W;
     const S=Math.min(PW*0.66,H*0.62);
     const x0=Math.max(14,PW*0.10), y0=H*0.13;
+    const valAt=i=>baseFr.pow(i);                        /* valore con segno al passo i */
 
-    /* rettangoli annidati: area = r^i */
+    /* rettangoli annidati: area = |base|^i (grandezza) */
     const dims=[{w:1,h:1}];
     for(let i=1;i<=kk;i++){
       const p=dims[i-1];
@@ -1013,63 +1054,72 @@ SIMS.potenza={
     const u=S/mx;
     const step=Math.floor((t*0.9)%(kk+2.4));
     for(let i=0;i<=kk;i++){
+      const alive=i<=step; if(!alive)continue;
       const d=dims[i];
-      const alive=i<=step;
-      if(!alive)continue;
       const isCur=i===Math.min(step,kk);
+      const vneg=valAt(i).v<0;                           /* segno del valore a questo passo */
+      const col=vneg?THEME.warn:THEME.accent;
       ctx.save();
       ctx.globalAlpha=isCur?1:0.85;
       const w=d.w*u,h=d.h*u;
-      ctx.fillStyle=hex2rgba(i===0?THEME.muted:THEME.accent, i===0?0.10:0.10+0.05*i);
+      ctx.fillStyle=hex2rgba(i===0?THEME.muted:col, i===0?0.10:0.12+0.05*i);
       ctx.fillRect(x0,y0,w,h);
-      ctx.strokeStyle=i===0?THEME["line-strong"]:hex2rgba(THEME.accent,isCur?1:0.5);
+      ctx.strokeStyle=i===0?THEME["line-strong"]:hex2rgba(col,isCur?1:0.5);
       ctx.lineWidth=isCur?2.6:1.3;
       ctx.strokeRect(x0,y0,w,h);
       if(isCur&&i>0){
         ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.clip();
-        shimmer(ctx,x0,y0,w,h,t,hex2rgba(THEME.accent,.30),1.2);ctx.restore();
+        shimmer(ctx,x0,y0,w,h,t,hex2rgba(col,.30),1.2);ctx.restore();
+        if(negBase){ label(ctx,vneg?"−":"+",x0+w-13,y0+13,15,col,"center",800); }
       }
       ctx.restore();
       if(isCur){
-        const val=flipped?F(v.b,v.a).pow(i):F(v.a,v.b).pow(i);
-        label(ctx,"passo "+i+" — area "+val.txt(),x0,y0+S+24,13,THEME.accent,"left",700);
+        const val=valAt(i);
+        label(ctx,"passo "+i+" — area "+F(Math.abs(val.n),val.d).txt()+(val.v<0?"  → valore "+val.txt():""),
+          x0,y0+S+24,13,col,"left",700);
       }
     }
     label(ctx,"quadrato unitario di area 1",x0,y0-12,12,THEME.muted);
-    if(flipped)label(ctx,"esponente negativo: si costruisce con la base ribaltata "+v.b+"/"+v.a,
-      x0,y0+S+44,12,THEME.fb,"left",600);
+    if(flipped)label(ctx,"esponente negativo: base ribaltata → "+baseFr.txt(),x0,y0+S+44,12,THEME.fb,"left",600);
+    else if(negBase)label(ctx,"base negativa: l'area è la grandezza, il segno è indicato a parte",x0,y0+S+44,12,THEME.fb,"left",600);
 
-    /* retta numerica dei valori successivi */
+    /* retta numerica dei valori successivi (con segno) */
     const lx = two? W*0.56 : Math.max(14,W*0.06);
     const lw = two? W-lx-32 : W-lx*2;
     const ly = two? H*0.55 : H*0.9;
     if(two||H>320){
-      const vals=[];
-      for(let i=0;i<=kk;i++){ vals.push(flipped?F(v.b,v.a).pow(i).v:F(v.a,v.b).pow(i).v); }
-      let vmax=Math.max(1,...vals);
+      const vals=[]; for(let i=0;i<=kk;i++) vals.push(valAt(i).v);
+      const vmax=Math.max(1,...vals.map(Math.abs));
+      const hasNeg=vals.some(x=>x<0);
+      /* asse: se ci sono valori negativi lo zero va al centro */
+      const zc = hasNeg ? lx+lw/2 : lx;
+      const sc = hasNeg ? (lw/2)/vmax : lw/vmax;
+      const X=val=>zc+val*sc;
       ctx.save();
       ctx.strokeStyle=THEME["line-strong"];ctx.lineWidth=1.6;
       ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+lw,ly);ctx.stroke();
-      [0,1].forEach(u2=>{ if(u2/vmax<=1){const x=lx+lw*(u2/vmax);
+      const ticks=hasNeg?[-1,0,1]:[0,1];
+      ticks.forEach(u2=>{ const x=X(u2); if(x>=lx-1&&x<=lx+lw+1){
         ctx.beginPath();ctx.moveTo(x,ly-6);ctx.lineTo(x,ly+6);ctx.stroke();
-        label(ctx,String(u2),x,ly+18,12,THEME.muted,"center");}});
+        label(ctx,String(u2),x,ly+18,12,u2===0?THEME.ink:THEME.muted,"center",u2===0?700:400);}});
+      if(hasNeg){ ctx.strokeStyle=hex2rgba(THEME.ink,.55);ctx.lineWidth=1.4;
+        ctx.beginPath();ctx.moveTo(zc,ly-14);ctx.lineTo(zc,ly+14);ctx.stroke(); }
       ctx.restore();
       vals.forEach((val,i)=>{
         if(i>step)return;
-        const x=lx+lw*(val/vmax);
-        const pulse=(i===Math.min(step,kk))?(1+0.25*Math.sin(t*6)):1;
+        const x=X(val), cur=i===Math.min(step,kk);
+        const vneg=val<0, col=vneg?THEME.warn:THEME.accent;
+        const pulse=cur?(1+0.25*Math.sin(t*6)):1;
         ctx.save();
-        ctx.beginPath();ctx.arc(x,ly,(i===Math.min(step,kk)?6:4)*pulse,0,7);
-        ctx.fillStyle=hex2rgba(THEME.accent,0.35+0.65*(i/Math.max(1,kk)));ctx.fill();
+        ctx.beginPath();ctx.arc(x,ly,(cur?6:4)*pulse,0,7);
+        ctx.fillStyle=hex2rgba(col,0.4+0.6*(i/Math.max(1,kk)));ctx.fill();
         ctx.restore();
-        if(i===Math.min(step,kk)){
-          const fv=flipped?F(v.b,v.a).pow(i):F(v.a,v.b).pow(i);
-          label(ctx,fv.txt(),x,ly-18,12.5,THEME.accent,"center",700);
-        }
+        if(cur) label(ctx,valAt(i).txt(),x,ly-18,12.5,col,"center",700);
       });
       label(ctx,"valori delle potenze successive",lx,ly-46,12,THEME.muted);
-      label(ctx, r<1? "base minore di 1: le potenze diminuiscono verso 0"
-                    : r>1? "base maggiore di 1: le potenze crescono" : "base uguale a 1: valore costante",
+      label(ctx,(r<1? "grandezza minore di 1: si avvicina a 0"
+                    : r>1? "grandezza maggiore di 1: cresce" : "grandezza uguale a 1: costante")
+                 +(negBase?" · segno alternato (pari +, dispari −)":""),
         lx,ly+44,12.5,THEME.muted);
     }
   }
@@ -1498,10 +1548,10 @@ $$ \\frac{a}{b}\\cdot\\frac{c}{d}=\\frac{a\\cdot c}{b\\cdot d} \\qquad (b\\neq0,
 <h3>Perché è così: il modello ad area</h3>
 <p>Moltiplicare per una frazione significa prenderne una parte. Consideriamo un quadrato di area 1. Selezionandone $\\frac{a}{b}$ in orizzontale e $\\frac{c}{d}$ in verticale, la griglia risultante ha $b\\cdot d$ celle uguali e la regione comune ne contiene $a\\cdot c$: la parte comune vale dunque $\\frac{ac}{bd}$. La preposizione "di" traduce la moltiplicazione: <em>i due terzi dei tre quarti</em> sono $\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{6}{12}=\\frac{1}{2}$.</p>
 
-<h3>Semplificazione preventiva</h3>
-<p>Poiché numeratori e denominatori si moltiplicano fra loro, ogni fattore comune a un numeratore e a un denominatore <em>qualsiasi</em> può essere elidato prima di eseguire i prodotti:</p>
+<h3>Semplificazione preventiva (a croce)</h3>
+<p>Poiché numeratori e denominatori si moltiplicano fra loro, ogni fattore comune a un numeratore e a un denominatore <em>qualsiasi</em> può essere elidato prima di eseguire i prodotti. Quando si elide un numeratore con il denominatore <em>dell'altra</em> frazione, in diagonale, si parla di <span class="def">semplificazione a croce</span>:</p>
 $$ \\frac{5}{8}\\cdot\\frac{12}{25}=\\frac{\\cancel{5}^{\\,1}}{\\cancel{8}^{\\,2}}\\cdot\\frac{\\cancel{12}^{\\,3}}{\\cancel{25}^{\\,5}}=\\frac{1\\cdot3}{2\\cdot5}=\\frac{3}{10} $$
-<p>Questo è lecito perché il prodotto è un'unica frazione $\\frac{5\\cdot12}{8\\cdot25}$ e la semplificazione agisce sui suoi fattori. <strong>Non</strong> è invece lecito farlo nell'addizione, dove i numeratori non diventano fattori di un'unica frazione.</p>
+<p>Nell'esempio il 5 si semplifica <em>a croce</em> con il 25 e il 12 con l'8. È lecito perché il prodotto è un'unica frazione $\\frac{5\\cdot12}{8\\cdot25}$ e la semplificazione a croce agisce sui suoi fattori. <strong>Non</strong> è invece lecito farlo nell'addizione, dove i numeratori non diventano fattori di un'unica frazione.</p>
 
 <h3>Proprietà</h3>
 <ul>
@@ -1527,10 +1577,10 @@ $$ \\frac{5}{8}\\cdot\\frac{12}{25}=\\frac{\\cancel{5}^{\\,1}}{\\cancel{8}^{\\,2
     intro:"Il quadrato ha area 1. Le colonne ciano rappresentano la prima frazione, le righe ambra la seconda: il prodotto è la regione comune, tratteggiata in movimento. Conta le celle e confronta con la formula."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\frac{3}{4}\\cdot\\frac{2}{9}$.",
-      h:"Prima di moltiplicare, semplifica 3 con 9 e 2 con 4.",
+      h:"Prima di moltiplicare, semplifica a croce: 3 con 9 e 2 con 4.",
       s:"$\\frac{3}{4}\\cdot\\frac{2}{9}=\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$."},
      {t:"Calcola $\\frac{5}{8}\\cdot\\frac{12}{25}$.",
-      h:"5 si semplifica con 25, mentre 12 si semplifica con 8 (fattore comune 4).",
+      h:"Semplificazione a croce: il 5 con il 25 e il 12 con l'8 (fattore comune 4).",
       s:"$\\frac{1}{2}\\cdot\\frac{3}{5}=\\frac{3}{10}$."},
      {t:"Calcola i $\\frac{3}{5}$ di $\\frac{10}{21}$.",
       h:"«di» indica il prodotto: imposta $\\frac{3}{5}\\cdot\\frac{10}{21}$.",
@@ -1599,7 +1649,7 @@ $$ \\dfrac{\\ \\frac{3}{5}\\ }{\\ \\frac{9}{10}\\ }=\\frac{3}{5}\\div\\frac{9}{1
       h:"Trasforma in prodotto per il reciproco del divisore: $\\frac{3}{4}\\cdot\\frac{5}{2}$.",
       s:"$\\frac{3}{4}\\cdot\\frac{5}{2}=\\frac{15}{8}$. Il risultato è maggiore del dividendo perché il divisore è minore di 1."},
      {t:"Calcola $\\frac{5}{6}\\div\\frac{10}{3}$.",
-      h:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: semplifica 5 con 10 e 3 con 6 prima di moltiplicare.",
+      h:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: dopo il reciproco semplifica a croce, 5 con 10 e 3 con 6, prima di moltiplicare.",
       s:"$\\frac{5}{6}\\cdot\\frac{3}{10}=\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
      {t:"Semplifica la frazione complessa $\\dfrac{\\ \\frac{7}{9}\\ }{\\ \\frac{14}{3}\\ }$.",
       h:"La linea principale è una divisione: $\\frac{7}{9}\\div\\frac{14}{3}$.",
@@ -1914,7 +1964,7 @@ moltiplicazione:[
   w:"Semplificando prima: 3 con 9 e 2 con 4, resta $\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$. Lo stesso risultato si ottiene da $\\frac{6}{36}$ riducendo alla fine."},
  {q:"Calcola $\\frac{5}{8}\\cdot\\frac{12}{25}$.",
   o:["$\\frac{3}{10}$","$\\frac{3}{5}$","$\\frac{17}{33}$","$\\frac{5}{24}$"],c:0,type:"problema",
-  w:"5 si semplifica con 25 (resta 5 al denominatore) e 12 con 8 (restano 3 e 2): $\\frac{1\\cdot3}{2\\cdot5}=\\frac{3}{10}$."},
+  w:"Semplificazione a croce: 5 con 25 (resta 5 al denominatore) e 12 con 8 (restano 3 e 2): $\\frac{1\\cdot3}{2\\cdot5}=\\frac{3}{10}$."},
  {q:"Calcola $\\left(-\\frac{4}{7}\\right)\\cdot\\frac{21}{8}$.",
   o:["$-\\frac{3}{2}$","$\\frac{3}{2}$","$-\\frac{2}{3}$","$-\\frac{7}{6}$"],c:0,type:"problema",
   w:"$\\frac{4\\cdot21}{7\\cdot8}=\\frac{84}{56}=\\frac{3}{2}$, con segno negativo perché i fattori hanno segni discordi: $-\\frac{3}{2}$."},
@@ -1961,7 +2011,7 @@ divisione:[
   w:"$\\frac{3}{4}\\cdot\\frac{5}{2}=\\frac{15}{8}$. Il risultato è maggiore del dividendo perché il divisore è minore di 1. Il valore $\\frac{3}{10}$ si ottiene moltiplicando invece di dividere."},
  {q:"Calcola $\\frac{5}{6}\\div\\frac{10}{3}$.",
   o:["$\\frac{1}{4}$","$\\frac{25}{9}$","$4$","$\\frac{5}{9}$"],c:0,type:"problema",
-  w:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: si semplifica 5 con 10 e 3 con 6, restando $\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
+  w:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: si semplifica a croce 5 con 10 e 3 con 6, restando $\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
  {q:"Semplifica $\\dfrac{\\ \\frac{3}{5}\\ }{\\ \\frac{9}{10}\\ }$.",
   o:["$\\frac{2}{3}$","$\\frac{27}{50}$","$\\frac{3}{2}$","$\\frac{6}{45}$"],c:0,type:"problema",
   w:"$\\frac{3}{5}\\cdot\\frac{10}{9}=\\frac{30}{45}=\\frac{2}{3}$. Il valore $\\frac{27}{50}$ nasce dal moltiplicare le due frazioni anziché dividere."},
