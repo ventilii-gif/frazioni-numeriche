@@ -1,0 +1,2332 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Operazioni con le frazioni numeriche</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<style>
+/* ============================================================
+   PALETTE E TEMI
+   Colore distintivo dell'app: indaco/violetto.
+   Frazione A = ciano/teal, Frazione B = ambra, Risultato = indaco.
+   Nessuna coppia rosso-verde (feedback: teal = corretto, ambra = da rivedere).
+   ============================================================ */
+:root{
+  --bg:#f4f1e8;
+  --bg-2:#ebe6d9;
+  --surface:#fffdf7;
+  --surface-2:#f7f3e9;
+  --ink:#1d1b17;
+  --ink-soft:#4a453c;
+  --muted:#6d675b;
+  --line:#d9d2c2;
+  --line-strong:#bdb4a0;
+  --accent:#4c3fb5;
+  --accent-soft:#e6e3f8;
+  --accent-ink:#3a2f96;
+  --fa:#0d7f96;          /* frazione A */
+  --fa-soft:#d8eef2;
+  --fb:#b06a12;          /* frazione B */
+  --fb-soft:#f7e9d3;
+  --ok:#0d7f96;
+  --ok-soft:#d8eef2;
+  --warn:#b06a12;
+  --warn-soft:#f7e9d3;
+  --shadow:0 1px 2px rgba(30,26,18,.06), 0 8px 24px rgba(30,26,18,.07);
+  --radius:14px;
+  --maxw:1080px;
+}
+html[data-theme="dark"]{
+  --bg:#12141a;
+  --bg-2:#0d0f14;
+  --surface:#1a1d25;
+  --surface-2:#20242e;
+  --ink:#e7e4dc;
+  --ink-soft:#c3bfb5;
+  --muted:#948f85;
+  --line:#2c313d;
+  --line-strong:#3b4250;
+  --accent:#9d90ee;
+  --accent-soft:#262340;
+  --accent-ink:#b8aef5;
+  --fa:#5fbdd0;
+  --fa-soft:#16323a;
+  --fb:#dda45f;
+  --fb-soft:#392c17;
+  --ok:#5fbdd0;
+  --ok-soft:#16323a;
+  --warn:#dda45f;
+  --warn-soft:#392c17;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-text-size-adjust:100%;
+  transition:background-color .5s ease, color .5s ease;
+}
+body,.card,.tab,.subtab,.btn,input,select,.chip,.box,.qopt,footer,header{
+  transition:background-color .5s ease, color .5s ease, border-color .5s ease, box-shadow .5s ease;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 18px}
+h1,h2,h3,h4{font-family:"Iowan Old Style",Georgia,serif;line-height:1.25;margin:0 0 .5em}
+h1{font-size:clamp(1.55rem,4.2vw,2.3rem);letter-spacing:-.01em}
+h2{font-size:clamp(1.25rem,3vw,1.6rem);margin-top:1.6em}
+h3{font-size:1.1rem;margin-top:1.4em;color:var(--accent-ink)}
+p{margin:0 0 1em}
+a{color:var(--accent-ink)}
+code,kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+
+/* ---------- HEADER (non sticky: scorre con la pagina) ---------- */
+header{
+  background:var(--surface);
+  border-bottom:1px solid var(--line);
+}
+.head-row{display:flex;align-items:flex-start;gap:16px;padding:18px 0 14px;flex-wrap:wrap}
+.head-txt{flex:1 1 260px;min-width:0}
+.head-txt h1{margin-bottom:.15em}
+.kicker{
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 .35em;
+}
+.head-txt p.sub{margin:0;color:var(--muted);font-size:.95rem}
+
+/* ---------- TOGGLE GIORNO/NOTTE ---------- */
+.theme-btn{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:9px;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem;font-weight:600;
+  background:var(--surface-2);color:var(--ink-soft);
+  border:1px solid var(--line-strong);border-radius:999px;
+  padding:8px 14px 8px 10px;cursor:pointer;
+}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent-ink)}
+.theme-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tglyph{width:20px;height:20px;display:block;overflow:visible}
+.tglyph .sun-core{transform-origin:12px 12px;transition:r .5s cubic-bezier(.4,0,.2,1), transform .5s cubic-bezier(.4,0,.2,1)}
+.tglyph .rays{transform-origin:12px 12px;transition:opacity .4s ease, transform .6s cubic-bezier(.4,0,.2,1)}
+.tglyph .moon-cut{transition:transform .55s cubic-bezier(.4,0,.2,1), opacity .4s ease}
+html[data-theme="dark"] .tglyph .rays{opacity:0;transform:rotate(60deg) scale(.4)}
+html[data-theme="dark"] .tglyph .sun-core{transform:scale(1.08)}
+html[data-theme="dark"] .tglyph .moon-cut{transform:translate(-5px,-4px);opacity:1}
+.tglyph .moon-cut{opacity:0;transform:translate(9px,-9px)}
+#sweep{position:fixed;inset:0;z-index:99;pointer-events:none;opacity:0}
+
+/* ---------- NAV PRINCIPALE ---------- */
+nav.main{background:var(--surface);border-bottom:1px solid var(--line)}
+.tabs{
+  display:flex;gap:4px;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch;padding-bottom:2px;
+}
+.tabs::-webkit-scrollbar{height:4px}
+.tabs::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px}
+.tab{
+  flex:0 0 auto;background:none;border:0;border-bottom:3px solid transparent;
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:.88rem;font-weight:600;color:var(--muted);
+  padding:13px 13px 10px;cursor:pointer;white-space:nowrap;border-radius:6px 6px 0 0;
+}
+.tab:hover{color:var(--ink);background:var(--surface-2)}
+.tab[aria-selected="true"]{color:var(--accent-ink);border-bottom-color:var(--accent)}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+
+/* ---------- SOTTOSCHEDE ---------- */
+.subnav-band{background:var(--bg-2);border-bottom:1px solid var(--line)}
+.subtabs{display:flex;gap:6px;overflow-x:auto;padding:9px 0;scrollbar-width:none}
+.subtabs::-webkit-scrollbar{display:none}
+.subtab{
+  flex:0 0 auto;border:1px solid var(--line-strong);background:var(--surface);
+  color:var(--muted);border-radius:999px;padding:6px 15px;cursor:pointer;
+  font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem;font-weight:600;white-space:nowrap;
+}
+.subtab:hover{color:var(--ink);border-color:var(--accent)}
+.subtab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+html[data-theme="dark"] .subtab[aria-selected="true"]{color:#14121f}
+.subtab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- CONTENUTO ---------- */
+main{padding:26px 0 60px;animation:fade .45s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:20px 22px;margin:0 0 20px;box-shadow:var(--shadow);
+}
+.card > :first-child{margin-top:0}
+.lead{font-size:1.06rem;color:var(--ink-soft)}
+.box{border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 10px 10px 0;padding:12px 16px;margin:1.1em 0}
+.box.note{border-left-color:var(--fa);background:var(--fa-soft)}
+.box.care{border-left-color:var(--warn);background:var(--warn-soft)}
+.box .lab{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--muted);display:block;margin-bottom:.35em}
+ul,ol{margin:0 0 1em;padding-left:1.3em}
+li{margin:.3em 0}
+table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.95rem}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--surface-2);font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.def{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--accent-ink)}
+
+/* ---------- BOTTONI ---------- */
+.btn{
+  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:.84rem;font-weight:600;border-radius:9px;cursor:pointer;
+  padding:8px 15px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink-soft);
+}
+.btn:hover{border-color:var(--accent);color:var(--accent-ink)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+html[data-theme="dark"] .btn.primary{color:#14121f}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+html[data-theme="dark"] .btn.primary:hover{color:#14121f}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:.6em 0}
+
+/* ---------- SIMULAZIONI ---------- */
+.simwrap{margin:0}
+.canvas-holder{
+  position:relative;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;
+}
+canvas{display:block;width:100%;height:340px;touch-action:pan-y}
+@media(max-width:640px){canvas{height:290px}}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 18px;margin-top:14px}
+.ctl{display:flex;flex-direction:column;gap:3px;font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem}
+.ctl label{font-weight:600;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.ctl label b{color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.ctl.fa label b{color:var(--fa)} .ctl.fb label b{color:var(--fb)}
+input[type=range]{width:100%;accent-color:var(--accent);height:22px;background:transparent}
+.ctl.fa input[type=range]{accent-color:var(--fa)}
+.ctl.fb input[type=range]{accent-color:var(--fb)}
+select{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line-strong);
+  background:var(--surface);color:var(--ink);font-family:inherit;font-size:.9rem}
+.readout{
+  margin-top:13px;padding:11px 14px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:10px;font-size:1.02rem;text-align:center;min-height:52px;
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px}
+.simnote{font-size:.86rem;color:var(--muted);margin:.9em 0 0;font-family:ui-sans-serif,system-ui,sans-serif}
+
+/* ---------- ESERCIZI ---------- */
+.ex{border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin:0 0 14px;background:var(--surface)}
+.ex .num{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--muted);display:block;margin-bottom:.35em}
+.reveal{
+  margin-top:11px;padding:12px 15px;border-radius:9px;border:1px dashed var(--line-strong);
+  background:var(--surface-2);animation:fade .35s ease}
+.reveal.hint{border-color:var(--fb);background:var(--fb-soft)}
+.reveal.sol{border-color:var(--accent);background:var(--accent-soft);border-style:solid}
+.reveal .lab{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--muted);display:block;margin-bottom:.3em}
+.hidden{display:none}
+
+/* ---------- QUIZ ---------- */
+.quizbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.pill{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.76rem;font-weight:700;
+  color:var(--muted);background:var(--surface-2);border:1px solid var(--line);
+  border-radius:999px;padding:4px 12px;white-space:nowrap}
+.dots{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 16px}
+.dot{width:26px;height:26px;border-radius:8px;border:1px solid var(--line-strong);
+  background:var(--surface);color:var(--muted);cursor:pointer;font-size:.7rem;font-weight:700;
+  font-family:ui-sans-serif,system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:0}
+.dot:hover{border-color:var(--accent)}
+.dot.cur{outline:2px solid var(--accent);outline-offset:1px}
+.dot.ok{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.dot.ko{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.qtext{font-size:1.08rem;margin:.2em 0 1em}
+.qtype{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:.5em;display:block}
+.qopts{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.qopt{
+  display:flex;gap:11px;align-items:flex-start;text-align:left;width:100%;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  border-radius:11px;padding:11px 14px;cursor:pointer;font-family:inherit;font-size:1rem;line-height:1.5}
+.qopt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.qopt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.qopt .mk{
+  flex:0 0 auto;width:24px;height:24px;border-radius:7px;border:1px solid var(--line-strong);
+  display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:700;
+  font-family:ui-sans-serif,system-ui,sans-serif;color:var(--muted);background:var(--surface-2)}
+.qopt.sel-ok{border-color:var(--ok);background:var(--ok-soft)}
+.qopt.sel-ok .mk{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.qopt.sel-ko{border-color:var(--warn);background:var(--warn-soft)}
+.qopt.sel-ko .mk{background:var(--warn);border-color:var(--warn);color:var(--surface)}
+.qopt.show-ok{border-color:var(--ok);border-style:dashed}
+.qopt:disabled{cursor:default;opacity:1}
+.fb{border-radius:11px;padding:13px 16px;margin-bottom:14px;animation:fade .35s ease;border:1px solid}
+.fb.good{border-color:var(--ok);background:var(--ok-soft)}
+.fb.oops{border-color:var(--warn);background:var(--warn-soft)}
+.fb .lab{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;display:block;margin-bottom:.3em}
+.fb.good .lab{color:var(--ok)} .fb.oops .lab{color:var(--warn)}
+.fb p{margin:0}
+.qnav{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;
+  border-top:1px solid var(--line);padding-top:14px}
+.score{text-align:center;padding:10px 0}
+.score .big{font-size:2.6rem;font-weight:700;color:var(--accent-ink);line-height:1.1;
+  font-family:ui-sans-serif,system-ui,sans-serif}
+.bar{height:9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);
+  overflow:hidden;margin:14px 0}
+.bar > i{display:block;height:100%;background:var(--accent);transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+/* ---------- TIMELINE SVG ---------- */
+.tl{width:100%;height:auto;display:block;overflow:visible}
+.tl text{font-family:ui-sans-serif,system-ui,sans-serif}
+
+footer{border-top:1px solid var(--line);background:var(--surface);color:var(--muted);
+  font-size:.83rem;font-family:ui-sans-serif,system-ui,sans-serif;padding:18px 0}
+.katex{font-size:1.04em}
+.katex-display{margin:.8em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.mathfb{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95em;
+  background:var(--surface-2);padding:0 3px;border-radius:4px}
+@media(max-width:640px){
+  body{font-size:16px}
+  .wrap{padding:0 13px}
+  .card{padding:16px 15px;border-radius:12px}
+  .controls{grid-template-columns:1fr 1fr;gap:10px 14px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div id="sweep"></div>
+
+<header>
+  <div class="wrap head-row">
+    <div class="head-txt">
+      <p class="kicker">Matematica &middot; Numeri razionali</p>
+      <h1>Operazioni con le frazioni numeriche</h1>
+      <p class="sub">Teoria, simulazioni animate, esercizi e quiz &mdash; dalla semplificazione alle espressioni miste.</p>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambia modalità giorno/notte">
+      <svg class="tglyph" viewBox="0 0 24 24" aria-hidden="true">
+        <defs><mask id="mcut"><rect x="0" y="0" width="24" height="24" fill="#fff"/>
+          <circle class="moon-cut" cx="17" cy="7" r="7" fill="#000"/></mask></defs>
+        <g class="rays" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <line x1="12" y1="1.5" x2="12" y2="3.6"/><line x1="12" y1="20.4" x2="12" y2="22.5"/>
+          <line x1="1.5" y1="12" x2="3.6" y2="12"/><line x1="20.4" y1="12" x2="22.5" y2="12"/>
+          <line x1="4.5" y1="4.5" x2="6" y2="6"/><line x1="18" y1="18" x2="19.5" y2="19.5"/>
+          <line x1="19.5" y1="4.5" x2="18" y2="6"/><line x1="6" y1="18" x2="4.5" y2="19.5"/>
+        </g>
+        <circle class="sun-core" cx="12" cy="12" r="6" fill="currentColor" mask="url(#mcut)"/>
+      </svg>
+      <span id="themeTxt">Notte</span>
+    </button>
+  </div>
+</header>
+
+<nav class="main" aria-label="Aree tematiche">
+  <div class="wrap"><div class="tabs" id="tabs" role="tablist"></div></div>
+</nav>
+<div class="subnav-band">
+  <div class="wrap"><div class="subtabs" id="subtabs" role="tablist" aria-label="Sezioni dell'area"></div></div>
+</div>
+
+<main><div class="wrap" id="panel"></div></main>
+
+<footer><div class="wrap">
+  Applicazione didattica autocontenuta &middot; numeri razionali e operazioni fra frazioni.
+  Le simulazioni sono ricalcolate in tempo reale a ogni fotogramma.
+</div></footer>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script>
+"use strict";
+/* ============================================================
+   1. UTILITÀ NUMERICHE — aritmetica esatta sui razionali
+   ============================================================ */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a;}
+function lcm(a,b){if(a===0||b===0)return 0;return Math.abs(a*b)/gcd(a,b);}
+
+class Fr{
+  constructor(n,d){
+    if(d===undefined)d=1;
+    if(d===0)throw new Error("denominatore nullo");
+    if(d<0){n=-n;d=-d;}
+    const g=gcd(n,d)||1;
+    this.n=n/g; this.d=d/g;
+  }
+  add(o){return new Fr(this.n*o.d+o.n*this.d,this.d*o.d);}
+  sub(o){return new Fr(this.n*o.d-o.n*this.d,this.d*o.d);}
+  mul(o){return new Fr(this.n*o.n,this.d*o.d);}
+  div(o){if(o.n===0)throw new Error("divisione per zero");return new Fr(this.n*o.d,this.d*o.n);}
+  pow(k){
+    if(k>=0)return new Fr(Math.pow(this.n,k),Math.pow(this.d,k));
+    if(this.n===0)throw new Error("base nulla con esponente negativo");
+    return new Fr(Math.pow(this.d,-k),Math.pow(this.n,-k));
+  }
+  neg(){return new Fr(-this.n,this.d);}
+  get v(){return this.n/this.d;}
+  tex(){
+    if(this.d===1)return String(this.n);
+    return (this.n<0?"-":"")+"\\frac{"+Math.abs(this.n)+"}{"+this.d+"}";
+  }
+  txt(){return this.d===1?String(this.n):this.n+"/"+this.d;}
+}
+const F=(n,d)=>new Fr(n,d);
+function texFrac(n,d){
+  if(d===1)return String(n);
+  return (n<0?"-":"")+"\\frac{"+Math.abs(n)+"}{"+d+"}";
+}
+
+/* ============================================================
+   2. TIPOGRAFIA MATEMATICA (KaTeX con fallback testuale)
+   ============================================================ */
+function fallbackMath(root){
+  const walk=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+  const jobs=[];let n;
+  while((n=walk.nextNode())){ if(n.nodeValue.indexOf("$")>=0)jobs.push(n); }
+  const par=x=>/^[-]?[\w.]+$/.test(x.trim())?x.trim():"("+x.trim()+")";
+  const clean=s=>s
+    .replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g,(_,n,d)=>par(n)+"/"+par(d))
+    .replace(/\\left|\\right|\\!|\\,|\\;/g,"")
+    .replace(/\\cdot/g,"·").replace(/\\times/g,"×").replace(/\\div/g,":")
+    .replace(/\\neq/g,"≠").replace(/\\leq/g,"≤").replace(/\\geq/g,"≥")
+    .replace(/\\Longleftrightarrow|\\iff/g,"⇔").replace(/\\Rightarrow/g,"⇒")
+    .replace(/\\in/g,"∈").replace(/\\mathbb\{([A-Z])\}/g,"$1")
+    .replace(/\\text\{([^{}]*)\}/g,"$1")
+    .replace(/[{}]/g,"").replace(/\\[a-zA-Z]+/g,"");
+  jobs.forEach(node=>{
+    const parts=node.nodeValue.split(/(\$\$[^$]*\$\$|\$[^$]*\$)/g);
+    if(parts.length<2)return;
+    const frag=document.createDocumentFragment();
+    parts.forEach(p=>{
+      const m=/^\$\$?([\s\S]*?)\$\$?$/.exec(p);
+      if(m&&p.startsWith("$")){
+        const s=document.createElement("span");
+        s.className="mathfb";s.textContent=clean(m[1]).trim();frag.appendChild(s);
+      }else if(p){frag.appendChild(document.createTextNode(p));}
+    });
+    node.parentNode.replaceChild(frag,node);
+  });
+}
+let katexReady=false;
+function typeset(root){
+  if(!root)return;
+  if(window.renderMathInElement){
+    katexReady=true;
+    try{
+      window.renderMathInElement(root,{
+        delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],
+        throwOnError:false, ignoredTags:["script","noscript","style","textarea","option"]
+      });
+      return;
+    }catch(e){/* cade nel fallback */}
+  }
+  if(!katexReady)fallbackMath(root);
+}
+window.addEventListener("load",()=>{ setTimeout(()=>{ if(!window.renderMathInElement){ fallbackMath(document.getElementById("panel")); } },400); });
+
+/* ============================================================
+   3. TEMA GIORNO/NOTTE con transizione animata
+   ============================================================ */
+const THEME={};
+function readTheme(){
+  const cs=getComputedStyle(document.documentElement);
+  ["bg","bg-2","surface","surface-2","ink","ink-soft","muted","line","line-strong",
+   "accent","accent-soft","accent-ink","fa","fa-soft","fb","fb-soft","ok","warn"]
+   .forEach(k=>THEME[k]=cs.getPropertyValue("--"+k).trim());
+  THEME.dark=document.documentElement.getAttribute("data-theme")==="dark";
+}
+function applyTheme(t,origin){
+  const root=document.documentElement;
+  const sweep=document.getElementById("sweep");
+  const next=t==="dark"?"#12141a":"#f4f1e8";
+  const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const set=()=>{
+    root.setAttribute("data-theme",t);
+    document.getElementById("themeTxt").textContent=t==="dark"?"Giorno":"Notte";
+    try{localStorage.setItem("frazioni-tema",t);}catch(e){}
+    readTheme();
+  };
+  if(reduce||!origin){set();return;}
+  const x=origin.x,y=origin.y;
+  const r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+  sweep.style.background=next;
+  sweep.style.opacity="1";
+  sweep.style.transition="none";
+  sweep.style.clipPath="circle(0px at "+x+"px "+y+"px)";
+  sweep.getBoundingClientRect();
+  sweep.style.transition="clip-path .58s cubic-bezier(.4,0,.2,1)";
+  sweep.style.clipPath="circle("+r+"px at "+x+"px "+y+"px)";
+  setTimeout(set,330);
+  setTimeout(()=>{sweep.style.transition="opacity .3s ease";sweep.style.opacity="0";},600);
+}
+(function initTheme(){
+  let saved=null;
+  try{saved=localStorage.getItem("frazioni-tema");}catch(e){}
+  if(!saved)saved=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+  document.documentElement.setAttribute("data-theme",saved);
+  document.addEventListener("DOMContentLoaded",()=>{
+    document.getElementById("themeTxt").textContent=saved==="dark"?"Giorno":"Notte";
+    document.getElementById("themeBtn").addEventListener("click",ev=>{
+      const b=ev.currentTarget.getBoundingClientRect();
+      const cur=document.documentElement.getAttribute("data-theme");
+      applyTheme(cur==="dark"?"light":"dark",{x:b.left+b.width/2,y:b.top+b.height/2});
+    });
+    readTheme();
+  });
+})();
+
+/* ============================================================
+   4. MOTORE DELLE SIMULAZIONI (canvas + rAF)
+   ============================================================ */
+let simLoop=null;
+function stopSim(){ if(simLoop){cancelAnimationFrame(simLoop.raf);simLoop=null;} }
+
+function makeSim(host,spec){
+  stopSim();
+  const wrap=document.createElement("div");wrap.className="simwrap";
+  const holder=document.createElement("div");holder.className="canvas-holder";
+  const cv=document.createElement("canvas");
+  holder.appendChild(cv);wrap.appendChild(holder);
+
+  const ctlBox=document.createElement("div");ctlBox.className="controls";
+  const vals={};
+  (spec.controls||[]).forEach(c=>{
+    const d=document.createElement("div");d.className="ctl"+(c.cls?" "+c.cls:"");
+    if(c.type==="select"){
+      const lb=document.createElement("label");lb.innerHTML="<span>"+c.label+"</span>";
+      const sel=document.createElement("select");
+      c.options.forEach((o,i)=>{const op=document.createElement("option");op.value=o.value;op.textContent=o.label;sel.appendChild(op);});
+      sel.value=c.value;vals[c.id]=c.value;
+      sel.addEventListener("change",()=>{vals[c.id]=sel.value;if(spec.onChange)spec.onChange(vals,api);});
+      d.appendChild(lb);d.appendChild(sel);
+    }else{
+      const lb=document.createElement("label");
+      const sp=document.createElement("span");sp.textContent=c.label;
+      const bo=document.createElement("b");bo.textContent=c.value;
+      lb.appendChild(sp);lb.appendChild(bo);
+      const inp=document.createElement("input");
+      inp.type="range";inp.min=c.min;inp.max=c.max;inp.step=c.step||1;inp.value=c.value;
+      vals[c.id]=+c.value;
+      inp.addEventListener("input",()=>{
+        vals[c.id]=+inp.value;bo.textContent=inp.value;
+        if(spec.onChange)spec.onChange(vals,api);
+      });
+      d.appendChild(lb);d.appendChild(inp);
+    }
+    ctlBox.appendChild(d);
+  });
+  wrap.appendChild(ctlBox);
+
+  const btnRow=document.createElement("div");btnRow.className="btnrow";
+  const playBtn=document.createElement("button");
+  playBtn.className="btn";playBtn.type="button";playBtn.textContent="Pausa";
+  const againBtn=document.createElement("button");
+  againBtn.className="btn";againBtn.type="button";againBtn.textContent="Riavvia animazione";
+  btnRow.appendChild(playBtn);btnRow.appendChild(againBtn);
+  (spec.extraButtons||[]).forEach(b=>{
+    const el=document.createElement("button");el.className="btn";el.type="button";el.textContent=b.label;
+    el.addEventListener("click",()=>b.onClick(vals,api));btnRow.appendChild(el);
+  });
+  wrap.appendChild(btnRow);
+
+  const read=document.createElement("div");read.className="readout";wrap.appendChild(read);
+  if(spec.note){const p=document.createElement("p");p.className="simnote";p.textContent=spec.note;wrap.appendChild(p);}
+  host.appendChild(wrap);
+
+  const ctx=cv.getContext("2d");
+  let cssW=0,cssH=0,dpr=1;
+  function fit(){
+    const r=holder.getBoundingClientRect();
+    const d=Math.min(window.devicePixelRatio||1,2);
+    if(Math.abs(r.width-cssW)>.5||Math.abs(r.height-cssH)>.5||d!==dpr){
+      cssW=r.width;cssH=r.height;dpr=d;
+      cv.width=Math.max(1,Math.round(cssW*d));
+      cv.height=Math.max(1,Math.round(cssH*d));
+    }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  let t0=performance.now(),paused=false,pauseT=0,acc=0;
+  const api={
+    vals:vals,
+    setReadout(html){read.innerHTML=html;typeset(read);},
+    restart(){acc=0;t0=performance.now();},
+    state:{}
+  };
+  playBtn.addEventListener("click",()=>{
+    paused=!paused;playBtn.textContent=paused?"Riprendi":"Pausa";
+    if(paused)pauseT=performance.now();else t0+=performance.now()-pauseT;
+  });
+  againBtn.addEventListener("click",()=>{api.restart();});
+  if(spec.init)spec.init(vals,api);
+  if(spec.onChange)spec.onChange(vals,api);
+
+  function frame(now){
+    fit();
+    const t=paused?acc:(acc=(now-t0)/1000);
+    ctx.clearRect(0,0,cssW,cssH);
+    ctx.fillStyle=THEME["surface-2"]||"#eee";
+    ctx.fillRect(0,0,cssW,cssH);
+    try{ spec.draw(ctx,cssW,cssH,t,vals,api); }catch(e){ /* nessun blocco del loop */ }
+    simLoop.raf=requestAnimationFrame(frame);
+  }
+  simLoop={raf:0};
+  simLoop.raf=requestAnimationFrame(frame);
+  return api;
+}
+
+/* ---- helper di disegno ---- */
+function roundRect(ctx,x,y,w,h,r){
+  r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function label(ctx,txt,x,y,size,color,align,weight){
+  ctx.save();
+  ctx.font=(weight||600)+" "+(size||13)+"px ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif";
+  ctx.fillStyle=color;ctx.textAlign=align||"left";ctx.textBaseline="middle";
+  ctx.fillText(txt,x,y);ctx.restore();
+}
+/* onda luminosa che percorre le zone piene: rende viva ogni simulazione */
+function shimmer(ctx,x,y,w,h,t,color,speed){
+  const sp=speed||1;
+  const p=((t*sp)%1.6)/1.6;
+  const cx=x-w*0.35+p*(w*1.7);
+  const g=ctx.createLinearGradient(cx-w*0.22,0,cx+w*0.22,0);
+  g.addColorStop(0,"rgba(255,255,255,0)");
+  g.addColorStop(.5,color);
+  g.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+  ctx.fillStyle=g;ctx.fillRect(x-w*0.4,y,w*1.8,h);ctx.restore();
+}
+function hex2rgba(hex,a){
+  hex=(hex||"#000").trim();
+  if(hex[0]!=="#")return hex;
+  if(hex.length===4)hex="#"+hex[1]+hex[1]+hex[2]+hex[2]+hex[3]+hex[3];
+  const n=parseInt(hex.slice(1),16);
+  return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")";
+}
+function easeInOut(x){return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+/* fase ciclica: ritorna {i, p} indice della fase e avanzamento 0..1 */
+function phase(t,durations){
+  const tot=durations.reduce((a,b)=>a+b,0);
+  let x=t%tot;
+  for(let i=0;i<durations.length;i++){
+    if(x<durations[i])return {i:i,p:x/durations[i],raw:x};
+    x-=durations[i];
+  }
+  return {i:durations.length-1,p:1,raw:0};
+}
+</script>
+<script>
+"use strict";
+/* ============================================================
+   5. SIMULAZIONI — una per area tematica
+   ============================================================ */
+const SIMS={};
+
+/* ---------- 5.1 SEMPLIFICAZIONE ---------- */
+SIMS.semplificazione={
+  note:"Le celle colorate scorrono con un'onda luminosa continua; nella fase centrale i separatori interni a ciascun gruppo svaniscono e le celle si fondono: è esattamente ciò che accade dividendo numeratore e denominatore per il MCD.",
+  controls:[
+    {id:"n",label:"Numeratore",min:1,max:24,value:8,cls:"fa"},
+    {id:"d",label:"Denominatore",min:1,max:24,value:12,cls:"fb"}
+  ],
+  onChange(v,api){
+    const g=gcd(v.n,v.d)||1;
+    api.setReadout("$"+texFrac(v.n,v.d)+" \\;=\\; "+texFrac(v.n/g,v.d/g)+"$ &nbsp;&nbsp; <span style='font-size:.85rem;color:var(--muted)'>MCD("+v.n+", "+v.d+") = "+g+(g===1?" &rarr; già ridotta":"")+"</span>");
+  },
+  draw(ctx,W,H,t,v,api){
+    const n=v.n,d=v.d,g=gcd(n,d)||1;
+    const nd=d/g, nn=n/g;
+    const ph=phase(t,[1.6,1.9,1.8]);
+    let p=0;
+    if(ph.i===1)p=easeInOut(ph.p); else if(ph.i===2)p=1;
+    const pad=Math.min(34,W*0.06);
+    const bw=W-pad*2-46, bh=Math.min(64,H*0.2);   /* spazio a destra per le etichette */
+    const y1=H*0.24, y2=H*0.66;
+
+    /* barra originale con fusione progressiva dei gruppi */
+    label(ctx,"frazione di partenza",pad,y1-bh*0.5-16,12,THEME.muted);
+    drawBar(ctx,pad,y1-bh/2,bw,bh,d,n,p,g,t,THEME.fa,THEME["fa-soft"]);
+    label(ctx,n+"/"+d,pad+bw+6,y1,13,THEME.fa,"left",700);
+
+    /* barra ridotta */
+    label(ctx,"frazione ridotta ai minimi termini",pad,y2-bh*0.5-16,12,THEME.muted);
+    drawBar(ctx,pad,y2-bh/2,bw,bh,nd,nn,1,1,t,THEME.accent,THEME["accent-soft"]);
+    label(ctx,nn+"/"+nd,pad+bw+6,y2,13,THEME.accent,"left",700);
+
+    /* linea di corrispondenza: stessa porzione di intero */
+    const xEnd=pad+bw*(n/d);
+    ctx.save();
+    ctx.setLineDash([5,5]);ctx.lineWidth=1.5;
+    ctx.strokeStyle=hex2rgba(THEME.accent,.55+.25*Math.sin(t*2.4));
+    ctx.beginPath();ctx.moveTo(xEnd,y1+bh/2);ctx.lineTo(xEnd,y2-bh/2);ctx.stroke();
+    ctx.restore();
+    label(ctx,"stessa porzione di intero",xEnd+8,(y1+y2)/2,12,THEME.muted);
+
+    function drawBar(ctx,x,y,w,h,den,num,merge,grp,t,col,soft){
+      const cw=w/den;
+      /* riempimento */
+      ctx.save();
+      roundRect(ctx,x,y,w,h,8);ctx.fillStyle=THEME.surface;ctx.fill();
+      ctx.clip();
+      ctx.fillStyle=hex2rgba(col,.30);
+      ctx.fillRect(x,y,cw*Math.min(num,den),h);
+      shimmer(ctx,x,y,cw*Math.min(num,den),h,t,hex2rgba(col,.34),.8);
+      ctx.restore();
+      /* separatori */
+      for(let i=1;i<den;i++){
+        const inGroup = grp>1 && (i%grp!==0);
+        const a = inGroup ? (1-merge) : 1;
+        if(a<=0.02)continue;
+        ctx.save();
+        ctx.strokeStyle=hex2rgba(inGroup?col:THEME["line-strong"],a*(inGroup?.75:.9));
+        ctx.lineWidth=inGroup?1:2;
+        ctx.beginPath();ctx.moveTo(x+cw*i,y+2);ctx.lineTo(x+cw*i,y+h-2);ctx.stroke();
+        ctx.restore();
+      }
+      roundRect(ctx,x,y,w,h,8);
+      ctx.lineWidth=2;ctx.strokeStyle=THEME["line-strong"];ctx.stroke();
+      /* riquadro del gruppo evidenziato */
+      if(grp>1){
+        const k=Math.floor((t*1.6)%Math.max(1,den/grp));
+        ctx.save();
+        ctx.strokeStyle=hex2rgba(THEME.accent,.85);ctx.lineWidth=2.5;
+        roundRect(ctx,x+cw*grp*k+1.5,y+1.5,cw*grp-3,h-3,6);ctx.stroke();
+        ctx.restore();
+      }
+      label(ctx,den+" parti uguali",x,y+h+14,12,THEME.muted);
+    }
+  }
+};
+
+/* ---------- 5.2 ADDIZIONE E SOTTRAZIONE ---------- */
+SIMS.addizione={
+  note:"Fase 1: le due frazioni con i loro denominatori. Fase 2: entrambe vengono risuddivise nel denominatore comune (il mcm). Fase 3: le parti si uniscono — o si tolgono — su un'unica barra.",
+  controls:[
+    {id:"a",label:"Numeratore A",min:1,max:11,value:2,cls:"fa"},
+    {id:"b",label:"Denominatore A",min:2,max:12,value:3,cls:"fa"},
+    {id:"c",label:"Numeratore B",min:1,max:11,value:1,cls:"fb"},
+    {id:"e",label:"Denominatore B",min:2,max:12,value:4,cls:"fb"},
+    {id:"op",label:"Operazione",type:"select",value:"+",options:[{value:"+",label:"addizione  A + B"},{value:"-",label:"sottrazione  A − B"}]}
+  ],
+  onChange(v,api){
+    const A=F(v.a,v.b),B=F(v.c,v.e);
+    const R=v.op==="+"?A.add(B):A.sub(B);
+    const m=lcm(v.b,v.e);
+    api.setReadout("$"+texFrac(v.a,v.b)+(v.op==="+"?"+":"-")+texFrac(v.c,v.e)+
+      "="+texFrac(v.a*(m/v.b),m)+(v.op==="+"?"+":"-")+texFrac(v.c*(m/v.e),m)+
+      "="+texFrac(v.a*(m/v.b)+(v.op==="+"?1:-1)*v.c*(m/v.e),m)+"="+R.tex()+"$"+
+      " &nbsp; <span style='font-size:.85rem;color:var(--muted)'>mcm("+v.b+", "+v.e+") = "+m+"</span>");
+  },
+  draw(ctx,W,H,t,v,api){
+    const a=v.a,b=v.b,c=v.c,e=v.e,add=v.op==="+";
+    const m=lcm(b,e), A2=a*(m/b), B2=c*(m/e);
+    const ph=phase(t,[1.7,1.9,2.1,1.9]);
+    const pad=Math.min(30,W*0.05);
+    const bw=W-pad*2-46, bx=pad, bh=Math.min(46,H*0.15);
+    const yA=H*0.18, yB=H*0.45, yR=H*0.78;
+    /* quante parti mostrare in ciascuna barra */
+    const conv = ph.i===0?0 : ph.i===1?easeInOut(ph.p) : 1;
+    const merge = ph.i===2?easeInOut(ph.p) : ph.i===3?1 : 0;
+
+    drawRow(yA,b,a,THEME.fa,"A = "+a+"/"+b,conv,m,A2);
+    drawRow(yB,e,c,THEME.fb,"B = "+c+"/"+e,conv,m,B2);
+
+    /* barra risultato */
+    if(merge>0){
+      const num = add ? A2+B2*merge : A2-B2*merge;
+      ctx.save();ctx.globalAlpha=Math.min(1,merge*1.6);
+      roundRect(ctx,bx,yR-bh/2,bw,bh,8);ctx.fillStyle=THEME.surface;ctx.fill();
+      const cw=bw/m;
+      /* parti provenienti da A */
+      const nA=add?A2:Math.max(0,A2-B2*merge);
+      ctx.save();roundRect(ctx,bx,yR-bh/2,bw,bh,8);ctx.clip();
+      ctx.fillStyle=hex2rgba(THEME.fa,.32);
+      ctx.fillRect(bx,yR-bh/2,cw*Math.min(nA,m),bh);
+      if(add){
+        ctx.fillStyle=hex2rgba(THEME.fb,.32);
+        ctx.fillRect(bx+cw*A2,yR-bh/2,cw*Math.min(B2*merge,m),bh);
+      }else{
+        /* le parti tolte restano visibili come tratteggio */
+        ctx.strokeStyle=hex2rgba(THEME.fb,.7);ctx.lineWidth=1.4;
+        const x0=bx+cw*nA, x1=bx+cw*A2;
+        for(let x=x0;x<x1;x+=7){ctx.beginPath();ctx.moveTo(x,yR-bh/2);ctx.lineTo(x-bh,yR+bh/2);ctx.stroke();}
+      }
+      shimmer(ctx,bx,yR-bh/2,bw,bh,t,hex2rgba(THEME.accent,.22),.7);
+      ctx.restore();
+      for(let i=1;i<m;i++){
+        ctx.strokeStyle=hex2rgba(THEME["line-strong"],.8);ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(bx+cw*i,yR-bh/2+2);ctx.lineTo(bx+cw*i,yR+bh/2-2);ctx.stroke();
+      }
+      roundRect(ctx,bx,yR-bh/2,bw,bh,8);ctx.lineWidth=2.4;ctx.strokeStyle=THEME.accent;ctx.stroke();
+      label(ctx,(add?A2+B2:A2-B2)+"/"+m,bx+bw+6,yR,13,THEME.accent,"left",700);
+      ctx.restore();
+    }
+    const RR=add?F(a,b).add(F(c,e)):F(a,b).sub(F(c,e));
+    label(ctx,["stesse frazioni, denominatori diversi",
+               "riduzione allo stesso denominatore: "+m,
+               add?"le parti si uniscono":"le parti si tolgono",
+               "risultato: "+(add?A2+B2:A2-B2)+"/"+m+" = "+RR.txt()][ph.i],bx,H*0.955,12.5,THEME.muted);
+
+    function drawRow(y,den,num,col,cap,conv,m,num2){
+      const showDen = conv>0.5?m:den;
+      const showNum = conv>0.5?num2:num;
+      const cw=bw/showDen;
+      ctx.save();
+      roundRect(ctx,bx,y-bh/2,bw,bh,8);ctx.fillStyle=THEME.surface;ctx.fill();
+      ctx.save();roundRect(ctx,bx,y-bh/2,bw,bh,8);ctx.clip();
+      ctx.fillStyle=hex2rgba(col,.32);
+      ctx.fillRect(bx,y-bh/2,Math.min(bw,cw*showNum),bh);
+      shimmer(ctx,bx,y-bh/2,Math.min(bw,cw*showNum),bh,t,hex2rgba(col,.3),.9);
+      ctx.restore();
+      /* separatori originali sempre pieni; quelli nuovi appaiono con conv */
+      for(let i=1;i<m;i++){
+        const isOrigLine = (i%(m/den))===0;
+        const alpha = isOrigLine?1:clamp((conv-0.15)/0.7,0,1);
+        if(alpha<=0.02)continue;
+        ctx.strokeStyle=hex2rgba(isOrigLine?THEME["line-strong"]:col,alpha*.85);
+        ctx.lineWidth=isOrigLine?2:1;
+        const xx=bx+(bw/m)*i;
+        ctx.beginPath();ctx.moveTo(xx,y-bh/2+2);ctx.lineTo(xx,y+bh/2-2);ctx.stroke();
+      }
+      roundRect(ctx,bx,y-bh/2,bw,bh,8);ctx.lineWidth=2;ctx.strokeStyle=col;ctx.stroke();
+      ctx.restore();
+      label(ctx,conv>0.5?(num2+"/"+m):cap.split(" = ")[1],bx+bw+6,y,13,col,"left",700);
+      label(ctx,cap.split(" ")[0],bx-2,y-bh/2-13,12,THEME.muted);
+    }
+  }
+};
+
+/* ---------- 5.3 MOLTIPLICAZIONE ---------- */
+SIMS.moltiplicazione={
+  note:"Il quadrato vale 1. Le colonne colorate sono la prima frazione, le righe la seconda: il prodotto è la parte comune, cioè «frazione di frazione». Le celle comuni sono ac su un totale di bd.",
+  controls:[
+    {id:"a",label:"Numeratore A",min:1,max:8,value:2,cls:"fa"},
+    {id:"b",label:"Denominatore A",min:2,max:9,value:3,cls:"fa"},
+    {id:"c",label:"Numeratore B",min:1,max:8,value:3,cls:"fb"},
+    {id:"e",label:"Denominatore B",min:2,max:9,value:4,cls:"fb"}
+  ],
+  onChange(v,api){
+    const R=F(v.a,v.b).mul(F(v.c,v.e));
+    api.setReadout("$"+texFrac(v.a,v.b)+"\\cdot"+texFrac(v.c,v.e)+"="+
+      "\\frac{"+v.a+"\\cdot"+v.c+"}{"+v.b+"\\cdot"+v.e+"}="+texFrac(v.a*v.c,v.b*v.e)+"="+R.tex()+"$");
+  },
+  draw(ctx,W,H,t,v,api){
+    const a=Math.min(v.a,v.b),b=v.b,c=Math.min(v.c,v.e),e=v.e;
+    const ph=phase(t,[1.5,1.5,2.6]);
+    const S=Math.min(W*0.62,H*0.86);
+    const x0=Math.max(14,W*0.06), y0=(H-S)/2;
+    const pA = ph.i===0?easeInOut(ph.p):1;
+    const pB = ph.i===0?0:ph.i===1?easeInOut(ph.p):1;
+    const pI = ph.i===2?easeInOut(Math.min(1,ph.p*1.5)):0;
+    const cw=S/b, chh=S/e;
+
+    ctx.save();
+    roundRect(ctx,x0,y0,S,S,8);ctx.fillStyle=THEME.surface;ctx.fill();
+    ctx.save();roundRect(ctx,x0,y0,S,S,8);ctx.clip();
+    /* colonne A */
+    ctx.fillStyle=hex2rgba(THEME.fa,.30);
+    ctx.fillRect(x0,y0,cw*a*pA,S);
+    /* righe B */
+    ctx.fillStyle=hex2rgba(THEME.fb,.30);
+    ctx.fillRect(x0,y0,S,chh*c*pB);
+    /* intersezione */
+    if(pI>0){
+      const iw=cw*a, ih=chh*c;
+      ctx.fillStyle=hex2rgba(THEME.accent,.34*pI);
+      ctx.fillRect(x0,y0,iw,ih);
+      /* tratteggio animato in movimento */
+      ctx.save();ctx.beginPath();ctx.rect(x0,y0,iw,ih);ctx.clip();
+      ctx.strokeStyle=hex2rgba(THEME.accent,.55);ctx.lineWidth=1.6;
+      const off=(t*26)%16;
+      for(let x=x0-ih-off;x<x0+iw+ih;x+=16){
+        ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x+ih,y0+ih);ctx.stroke();
+      }
+      ctx.restore();
+      shimmer(ctx,x0,y0,iw,ih,t,hex2rgba(THEME.accent,.28),.9);
+    }
+    ctx.restore();
+    /* griglia */
+    ctx.lineWidth=1;
+    for(let i=1;i<b;i++){ctx.strokeStyle=hex2rgba(THEME.fa,.5);ctx.beginPath();ctx.moveTo(x0+cw*i,y0);ctx.lineTo(x0+cw*i,y0+S);ctx.stroke();}
+    for(let j=1;j<e;j++){ctx.strokeStyle=hex2rgba(THEME.fb,.5);ctx.beginPath();ctx.moveTo(x0,y0+chh*j);ctx.lineTo(x0+S,y0+chh*j);ctx.stroke();}
+    roundRect(ctx,x0,y0,S,S,8);ctx.lineWidth=2.2;ctx.strokeStyle=THEME["line-strong"];ctx.stroke();
+    ctx.restore();
+
+    /* etichette laterali */
+    label(ctx,a+"/"+b+" della base",x0,y0-14,12.5,THEME.fa,"left",700);
+    ctx.save();ctx.translate(x0-10,y0+S/2);ctx.rotate(-Math.PI/2);
+    label(ctx,c+"/"+e+" dell'altezza",0,0,12.5,THEME.fb,"center",700);ctx.restore();
+
+    /* pannello destro */
+    const px=x0+S+22, pw=W-px-14;
+    if(pw>96){
+      const R=F(a*c,b*e);
+      label(ctx,"celle totali: "+b+" × "+e+" = "+(b*e),px,y0+16,13,THEME.muted,"left",600);
+      label(ctx,"celle comuni: "+a+" × "+c+" = "+(a*c),px,y0+40,13,THEME.accent,"left",700);
+      label(ctx,"prodotto = "+(a*c)+"/"+(b*e),px,y0+68,14,THEME.accent,"left",700);
+      label(ctx,"ridotto = "+R.txt(),px,y0+90,14,THEME.accent,"left",700);
+      /* mini barra del valore */
+      const by=y0+120, bhh=14;
+      roundRect(ctx,px,by,Math.max(30,pw-10),bhh,6);
+      ctx.fillStyle=THEME.surface;ctx.fill();ctx.strokeStyle=THEME["line-strong"];ctx.lineWidth=1.5;ctx.stroke();
+      ctx.save();roundRect(ctx,px,by,Math.max(30,pw-10),bhh,6);ctx.clip();
+      ctx.fillStyle=hex2rgba(THEME.accent,.45);
+      ctx.fillRect(px,by,Math.max(30,pw-10)*R.v,bhh);
+      shimmer(ctx,px,by,Math.max(30,pw-10)*R.v,bhh,t,hex2rgba(THEME.accent,.3),1.1);
+      ctx.restore();
+      label(ctx,"il prodotto di due frazioni minori di 1",px,by+34,11.5,THEME.muted,"left",500);
+      label(ctx,"è minore di entrambe",px,by+50,11.5,THEME.muted,"left",500);
+    }
+    label(ctx,["si evidenzia la prima frazione (colonne)","si evidenzia la seconda frazione (righe)","la parte comune è il prodotto"][ph.i],
+      x0,y0+S+22,12.5,THEME.muted);
+  }
+};
+
+/* ---------- 5.4 DIVISIONE ---------- */
+SIMS.divisione={
+  note:"La divisione risponde alla domanda: quante volte il divisore sta nel dividendo? Le unità ambra avanzano una alla volta lungo il segmento; l'ultima, se parziale, è tratteggiata e corrisponde alla parte frazionaria del quoziente.",
+  controls:[
+    {id:"a",label:"Dividendo: numeratore",min:1,max:12,value:3,cls:"fa"},
+    {id:"b",label:"Dividendo: denominatore",min:1,max:12,value:4,cls:"fa"},
+    {id:"c",label:"Divisore: numeratore",min:1,max:12,value:1,cls:"fb"},
+    {id:"e",label:"Divisore: denominatore",min:1,max:12,value:8,cls:"fb"}
+  ],
+  onChange(v,api){
+    const Q=F(v.a,v.b).div(F(v.c,v.e));
+    api.setReadout("$"+texFrac(v.a,v.b)+"\\div"+texFrac(v.c,v.e)+"="+texFrac(v.a,v.b)+"\\cdot"+texFrac(v.e,v.c)+"="+
+      texFrac(v.a*v.e,v.b*v.c)+"="+Q.tex()+"$ &nbsp; <span style='font-size:.85rem;color:var(--muted)'>il divisore ci sta "+Q.txt()+" volte</span>");
+  },
+  draw(ctx,W,H,t,v,api){
+    const A=F(v.a,v.b), B=F(v.c,v.e), Q=A.div(B);
+    const q=Q.v;
+    const L=Math.max(1,A.v);              /* estremo dell'asse */
+    const pad=Math.min(34,W*0.06);
+    const bw=W-pad*2, bx=pad;
+    const yBar=H*0.34, bh=Math.min(52,H*0.17);
+    const sc=bw/L;
+
+    /* asse con unità */
+    ctx.save();
+    ctx.strokeStyle=THEME["line-strong"];ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(bx,yBar+bh/2+26);ctx.lineTo(bx+bw,yBar+bh/2+26);ctx.stroke();
+    for(let u=0;u<=Math.ceil(L);u++){
+      const x=bx+sc*u; if(x>bx+bw+1)break;
+      ctx.beginPath();ctx.moveTo(x,yBar+bh/2+20);ctx.lineTo(x,yBar+bh/2+32);ctx.stroke();
+      label(ctx,String(u),x,yBar+bh/2+44,12,THEME.muted,"center");
+    }
+    ctx.restore();
+
+    /* dividendo */
+    const dw=sc*A.v;
+    ctx.save();
+    roundRect(ctx,bx,yBar-bh/2,dw,bh,7);
+    ctx.fillStyle=hex2rgba(THEME.fa,.28);ctx.fill();
+    ctx.strokeStyle=THEME.fa;ctx.lineWidth=2.2;ctx.stroke();
+    ctx.save();roundRect(ctx,bx,yBar-bh/2,dw,bh,7);ctx.clip();
+    shimmer(ctx,bx,yBar-bh/2,dw,bh,t,hex2rgba(THEME.fa,.3),.75);ctx.restore();
+    ctx.restore();
+    label(ctx,"dividendo "+A.txt(),bx,yBar-bh/2-14,13,THEME.fa,"left",700);
+
+    /* unità del divisore che avanzano */
+    const full=Math.floor(q+1e-9), frac=q-full;
+    const total=Math.min(full+(frac>1e-9?1:0),60);
+    const speed = q>16?9:q>6?3.2:1.5;
+    const shown=Math.min(total,Math.floor((t*speed)%(total+2.2)));
+    const uw=sc*B.v;
+    for(let k=0;k<shown;k++){
+      const isPartial = (k===full);
+      const w = isPartial? uw*frac : uw;
+      if(w<0.3)continue;
+      const x=bx+uw*k, y=yBar+bh/2+70;
+      ctx.save();
+      const appear=clamp((shown-k),0,1);
+      ctx.globalAlpha=0.35+0.65*appear;
+      roundRect(ctx,x+1,y,Math.max(2,w-2),bh*0.72,5);
+      ctx.fillStyle=hex2rgba(THEME.fb,isPartial?.16:.30);ctx.fill();
+      ctx.strokeStyle=THEME.fb;ctx.lineWidth=1.8;
+      if(isPartial)ctx.setLineDash([4,4]);
+      ctx.stroke();
+      ctx.restore();
+      if(uw>26&&!isPartial&&k<24)label(ctx,String(k+1),x+uw/2,y+bh*0.36,12,THEME.fb,"center",700);
+    }
+    label(ctx,"divisore "+B.txt()+" ripetuto",bx+bw,yBar+bh/2+60,13,THEME.fb,"right",700);
+
+    /* linea verticale mobile che segue il fronte */
+    const front=bx+Math.min(dw,uw*shown);
+    ctx.save();
+    ctx.strokeStyle=hex2rgba(THEME.accent,.75);ctx.lineWidth=2;
+    ctx.setLineDash([6,4]);ctx.lineDashOffset=-t*22;
+    ctx.beginPath();ctx.moveTo(front,yBar-bh/2-6);ctx.lineTo(front,yBar+bh/2+70+bh*0.72+6);ctx.stroke();
+    ctx.restore();
+
+    /* riepilogo */
+    const yy=H*0.93;
+    label(ctx,"quoziente: "+A.txt()+" : "+B.txt()+" = "+A.txt()+" × "+F(v.e,v.c).txt()+" = "+Q.txt()
+      +(full>0? "   ("+full+" volte intere"+(frac>1e-9?" più una parte":"")+")":""),
+      bx,yy,13,THEME.accent,"left",700);
+  }
+};
+
+/* ---------- 5.5 POTENZA ---------- */
+SIMS.potenza={
+  note:"A sinistra, ogni passo prende la frazione della figura precedente: l'area del rettangolo dopo n passi vale esattamente la potenza n-esima. A destra, i valori successivi sulla retta numerica: si vede subito se la potenza cresce o tende a zero.",
+  controls:[
+    {id:"a",label:"Numeratore della base",min:1,max:9,value:2,cls:"fa"},
+    {id:"b",label:"Denominatore della base",min:1,max:9,value:3,cls:"fa"},
+    {id:"k",label:"Esponente",min:-4,max:5,value:3,cls:"fb"}
+  ],
+  onChange(v,api){
+    let txt;
+    try{
+      const R=F(v.a,v.b).pow(v.k);
+      if(v.k>=0) txt="$\\left("+texFrac(v.a,v.b)+"\\right)^{"+v.k+"}=\\frac{"+v.a+"^{"+v.k+"}}{"+v.b+"^{"+v.k+"}}="+R.tex()+"$";
+      else txt="$\\left("+texFrac(v.a,v.b)+"\\right)^{"+v.k+"}=\\left("+texFrac(v.b,v.a)+"\\right)^{"+(-v.k)+"}="+R.tex()+"$";
+    }catch(err){ txt="<span style='color:var(--warn)'>La base non può essere 0 con esponente negativo.</span>"; }
+    api.setReadout(txt);
+  },
+  draw(ctx,W,H,t,v,api){
+    let r, kk=Math.abs(v.k), flipped=v.k<0;
+    if(v.a===0){ label(ctx,"Base nulla: con esponente negativo la potenza non è definita.",W/2,H/2,14,THEME.warn,"center",700); return; }
+    r = flipped ? v.b/v.a : v.a/v.b;
+    /* costruzione geometrica */
+    const two = W>560;
+    const PW = two? W*0.52 : W;
+    const S=Math.min(PW*0.66,H*0.62);
+    const x0=Math.max(14,PW*0.10), y0=H*0.13;
+
+    /* rettangoli annidati: area = r^i */
+    const dims=[{w:1,h:1}];
+    for(let i=1;i<=kk;i++){
+      const p=dims[i-1];
+      dims.push(i%2===1?{w:p.w*r,h:p.h}:{w:p.w,h:p.h*r});
+    }
+    let mx=1; dims.forEach(d=>{mx=Math.max(mx,d.w,d.h);});
+    const u=S/mx;
+    const step=Math.floor((t*0.9)%(kk+2.4));
+    for(let i=0;i<=kk;i++){
+      const d=dims[i];
+      const alive=i<=step;
+      if(!alive)continue;
+      const isCur=i===Math.min(step,kk);
+      ctx.save();
+      ctx.globalAlpha=isCur?1:0.85;
+      const w=d.w*u,h=d.h*u;
+      ctx.fillStyle=hex2rgba(i===0?THEME.muted:THEME.accent, i===0?0.10:0.10+0.05*i);
+      ctx.fillRect(x0,y0,w,h);
+      ctx.strokeStyle=i===0?THEME["line-strong"]:hex2rgba(THEME.accent,isCur?1:0.5);
+      ctx.lineWidth=isCur?2.6:1.3;
+      ctx.strokeRect(x0,y0,w,h);
+      if(isCur&&i>0){
+        ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.clip();
+        shimmer(ctx,x0,y0,w,h,t,hex2rgba(THEME.accent,.30),1.2);ctx.restore();
+      }
+      ctx.restore();
+      if(isCur){
+        const val=flipped?F(v.b,v.a).pow(i):F(v.a,v.b).pow(i);
+        label(ctx,"passo "+i+" — area "+val.txt(),x0,y0+S+24,13,THEME.accent,"left",700);
+      }
+    }
+    label(ctx,"quadrato unitario di area 1",x0,y0-12,12,THEME.muted);
+    if(flipped)label(ctx,"esponente negativo: si costruisce con la base ribaltata "+v.b+"/"+v.a,
+      x0,y0+S+44,12,THEME.fb,"left",600);
+
+    /* retta numerica dei valori successivi */
+    const lx = two? W*0.56 : Math.max(14,W*0.06);
+    const lw = two? W-lx-32 : W-lx*2;
+    const ly = two? H*0.55 : H*0.9;
+    if(two||H>320){
+      const vals=[];
+      for(let i=0;i<=kk;i++){ vals.push(flipped?F(v.b,v.a).pow(i).v:F(v.a,v.b).pow(i).v); }
+      let vmax=Math.max(1,...vals);
+      ctx.save();
+      ctx.strokeStyle=THEME["line-strong"];ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+lw,ly);ctx.stroke();
+      [0,1].forEach(u2=>{ if(u2/vmax<=1){const x=lx+lw*(u2/vmax);
+        ctx.beginPath();ctx.moveTo(x,ly-6);ctx.lineTo(x,ly+6);ctx.stroke();
+        label(ctx,String(u2),x,ly+18,12,THEME.muted,"center");}});
+      ctx.restore();
+      vals.forEach((val,i)=>{
+        if(i>step)return;
+        const x=lx+lw*(val/vmax);
+        const pulse=(i===Math.min(step,kk))?(1+0.25*Math.sin(t*6)):1;
+        ctx.save();
+        ctx.beginPath();ctx.arc(x,ly,(i===Math.min(step,kk)?6:4)*pulse,0,7);
+        ctx.fillStyle=hex2rgba(THEME.accent,0.35+0.65*(i/Math.max(1,kk)));ctx.fill();
+        ctx.restore();
+        if(i===Math.min(step,kk)){
+          const fv=flipped?F(v.b,v.a).pow(i):F(v.a,v.b).pow(i);
+          label(ctx,fv.txt(),x,ly-18,12.5,THEME.accent,"center",700);
+        }
+      });
+      label(ctx,"valori delle potenze successive",lx,ly-46,12,THEME.muted);
+      label(ctx, r<1? "base minore di 1: le potenze diminuiscono verso 0"
+                    : r>1? "base maggiore di 1: le potenze crescono" : "base uguale a 1: valore costante",
+        lx,ly+44,12.5,THEME.muted);
+    }
+  }
+};
+
+/* ---------- 5.6 ESPRESSIONI MISTE ---------- */
+function nLeaf(fr){return {type:"leaf",fr:fr};}
+function nInt(k){return {type:"int",k:k};}
+function nOp(op,l,r){return {type:op,l:l,r:r};}
+const EXPRS=[
+  { label:"1/2 + 2/3 · 3/4",
+    tex:"\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}",
+    tree:nOp("add",nLeaf(F(1,2)),nOp("mul",nLeaf(F(2,3)),nLeaf(F(3,4)))) },
+  { label:"(1/2 + 1/3) : 5/6",
+    tex:"\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}",
+    tree:nOp("div",nOp("add",nLeaf(F(1,2)),nLeaf(F(1,3))),nLeaf(F(5,6))) },
+  { label:"(3/4 − 1/2)² · 4/3 + 1/3",
+    tex:"\\left(\\frac{3}{4}-\\frac{1}{2}\\right)^{2}\\cdot\\frac{4}{3}+\\frac{1}{3}",
+    tree:nOp("add",nOp("mul",nOp("pow",nOp("sub",nLeaf(F(3,4)),nLeaf(F(1,2))),nInt(2)),nLeaf(F(4,3))),nLeaf(F(1,3))) },
+  { label:"2/5 : (1/2 − 1/10) · (2/3)⁻¹",
+    tex:"\\frac{2}{5}\\div\\left(\\frac{1}{2}-\\frac{1}{10}\\right)\\cdot\\left(\\frac{2}{3}\\right)^{-1}",
+    tree:nOp("mul",nOp("div",nLeaf(F(2,5)),nOp("sub",nLeaf(F(1,2)),nLeaf(F(1,10)))),nOp("pow",nLeaf(F(2,3)),nInt(-1))) }
+];
+const OPSYM={add:"+",sub:"−",mul:"·",div:":",pow:"^"};
+function evalNode(n){
+  if(n.type==="leaf")return n.fr;
+  if(n.type==="int")return F(n.k,1);
+  const L=evalNode(n.l);
+  if(n.type==="pow")return L.pow(n.r.k);
+  const R=evalNode(n.r);
+  return n.type==="add"?L.add(R):n.type==="sub"?L.sub(R):n.type==="mul"?L.mul(R):L.div(R);
+}
+function postOrder(n,out){
+  if(n.type==="leaf"||n.type==="int")return out;
+  postOrder(n.l,out);
+  postOrder(n.r,out);
+  out.push(n);
+  return out;
+}
+function layout(n,depth,cursor,nodes){
+  if(n.type==="leaf"||n.type==="int"){
+    n._x=cursor.x; cursor.x+=1; n._d=depth; nodes.push(n); return nodes;
+  }
+  layout(n.l,depth+1,cursor,nodes);
+  layout(n.r,depth+1,cursor,nodes);
+  n._x=(n.l._x+n.r._x)/2; n._d=depth;
+  nodes.push(n);
+  return nodes;
+}
+SIMS.espressioni={
+  note:"Il calcolo si propaga dal basso verso l'alto: ogni nodo si accende solo quando entrambi i suoi rami sono già stati calcolati. È l'ordine imposto dalle parentesi e dalla precedenza degli operatori.",
+  controls:[
+    {id:"ex",label:"Espressione",type:"select",value:"0",
+     options:EXPRS.map((e,i)=>({value:String(i),label:e.label}))},
+    {id:"sp",label:"Velocità",min:5,max:20,value:10}
+  ],
+  onChange(v,api){
+    const E=EXPRS[+v.ex];
+    api.setReadout("$"+E.tex+" = "+evalNode(E.tree).tex()+"$");
+  },
+  draw(ctx,W,H,t,v,api){
+    const E=EXPRS[+v.ex];
+    const nodes=[]; const cursor={x:0};
+    layout(E.tree,0,cursor,nodes);
+    const cols=cursor.x, maxD=Math.max(...nodes.map(n=>n._d));
+    const padX=Math.min(46,W*0.09), padY=26;
+    const gx=(W-padX*2)/Math.max(1,cols-1||1);
+    const gy=(H-padY*2-30)/Math.max(1,maxD);
+    nodes.forEach(n=>{ n._px=padX+n._x*gx; n._py=padY+n._d*gy; });   /* radice in alto, foglie in basso */
+    const order=postOrder(E.tree,[]);
+    const stepDur=1.4-(v.sp-5)*0.055;
+    const cycle=order.length*stepDur+2.2;
+    const tt=t%cycle;
+    const done=Math.floor(tt/stepDur);
+    const local=(tt/stepDur)-done;
+
+    /* rami */
+    nodes.forEach(n=>{
+      if(n.type==="leaf"||n.type==="int")return;
+      const kids=n.type==="pow"?[n.l,n.r]:[n.l,n.r];
+      kids.forEach(k=>{
+        if(!k)return;
+        const idx=order.indexOf(n);
+        const active = idx===done;
+        const doneEdge = idx<done;
+        ctx.save();
+        ctx.strokeStyle=doneEdge?hex2rgba(THEME.accent,.55):hex2rgba(THEME["line-strong"],.85);
+        ctx.lineWidth=doneEdge?2.2:1.6;
+        ctx.beginPath();ctx.moveTo(k._px,k._py);ctx.lineTo(n._px,n._py);ctx.stroke();
+        if(active){
+          /* impulso che risale il ramo */
+          const p=easeInOut(clamp(local*1.25,0,1));
+          const px=k._px+(n._px-k._px)*p, py=k._py+(n._py-k._py)*p;
+          ctx.beginPath();ctx.arc(px,py,5.5,0,7);
+          ctx.fillStyle=THEME.accent;ctx.fill();
+          ctx.beginPath();ctx.arc(px,py,10+4*Math.sin(t*9),0,7);
+          ctx.strokeStyle=hex2rgba(THEME.accent,.35);ctx.lineWidth=2;ctx.stroke();
+        }
+        ctx.restore();
+      });
+    });
+    /* nodi */
+    nodes.forEach(n=>{
+      const idx=order.indexOf(n);
+      const isLeaf=n.type==="leaf"||n.type==="int";
+      const computed=!isLeaf&&idx<done;
+      const active=!isLeaf&&idx===done;
+      let txt, col;
+      if(n.type==="leaf"){txt=n.fr.txt();col=THEME.fa;}
+      else if(n.type==="int"){txt=String(n.k);col=THEME.fb;}
+      else if(computed||active&&local>0.75){txt=evalNode(n).txt();col=THEME.accent;}
+      else {txt=OPSYM[n.type];col=THEME.muted;}
+      ctx.save();
+      ctx.font="700 13px ui-sans-serif,system-ui,sans-serif";
+      const w=Math.max(34,ctx.measureText(txt).width+18), h=27;
+      roundRect(ctx,n._px-w/2,n._py-h/2,w,h,8);
+      ctx.fillStyle= (computed||active)? hex2rgba(THEME.accent,.16) : THEME.surface;
+      ctx.fill();
+      ctx.lineWidth=active?2.8:1.8;
+      ctx.strokeStyle= active? THEME.accent : (computed? hex2rgba(THEME.accent,.7) : (isLeaf?col:THEME["line-strong"]));
+      ctx.stroke();
+      if(active){
+        ctx.beginPath();
+        roundRect(ctx,n._px-w/2-4-2*Math.sin(t*7),n._py-h/2-4-2*Math.sin(t*7),
+          w+8+4*Math.sin(t*7),h+8+4*Math.sin(t*7),11);
+        ctx.strokeStyle=hex2rgba(THEME.accent,.3);ctx.lineWidth=2;ctx.stroke();
+      }
+      ctx.restore();
+      label(ctx,txt,n._px,n._py,13,(computed||active)?THEME.accent:col,"center",700);
+    });
+    const doneClamped=Math.min(done,order.length);
+    label(ctx, doneClamped>=order.length? "espressione completata: risultato "+evalNode(E.tree).txt()
+             : "passo "+(doneClamped+1)+" di "+order.length+": si calcola "+OPSYM[order[doneClamped].type],
+      padX-10,H-12,13,THEME.accent,"left",700);
+  }
+};
+
+/* ============================================================
+   6. CONTENUTI — teoria ed esercizi
+   ============================================================ */
+const AREAS=[
+{
+  id:"storia", title:"Introduzione storica",
+  sub:[
+   {id:"racconto",label:"Il percorso",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Come l'umanità ha imparato a dividere l'unità</h2>
+<p class="lead">Le frazioni non sono nate come oggetto astratto, ma come risposta a un problema concreto: che cosa scrivere quando la misura non è un numero intero di unità. La loro forma attuale — due numeri separati da una linea — è il punto d'arrivo di oltre tremila anni di tentativi.</p>
+
+<h3>L'Egitto e le frazioni unitarie</h3>
+<p>Il <strong>papiro di Rhind</strong> (copiato dallo scriba Ahmes intorno al 1650 a.C. da un originale più antico) mostra un sistema in cui, con la sola eccezione di $\\frac{2}{3}$, tutte le frazioni hanno numeratore 1: $\\frac{1}{2}$, $\\frac{1}{3}$, $\\frac{1}{7}$. Una quantità come $\\frac{3}{4}$ non veniva scritta come tale, ma decomposta in somma di frazioni unitarie distinte: $\\frac{3}{4}=\\frac{1}{2}+\\frac{1}{4}$. Il papiro contiene tavole di decomposizione di $\\frac{2}{n}$ perché quel passaggio, tutt'altro che immediato, andava memorizzato. Il sistema era coerente e sufficiente per l'amministrazione — ripartire pani fra lavoratori, calcolare razioni — ma rendeva le operazioni laboriose.</p>
+
+<h3>Babilonia e la scelta della base</h3>
+<p>I matematici babilonesi adottarono una strada diversa: un sistema posizionale in <strong>base 60</strong>, in cui la parte non intera si esprimeva come successione di sessantesimi, come oggi facciamo con i decimali. Il vantaggio è che 60 ha molti divisori (2, 3, 4, 5, 6, 10, 12, 15, 20, 30): moltissime frazioni comuni diventano finite. Ne restano tracce quotidiane negli angoli e nelle ore. Il limite è però strutturale: una frazione come $\\frac{1}{7}$ resta comunque periodica.</p>
+
+<h3>La Grecia: rapporti, non numeri</h3>
+<p>Per i Greci il protagonista non era la frazione ma il <strong>rapporto</strong> fra grandezze. Negli <em>Elementi</em> di Euclide (III secolo a.C.), la teoria delle proporzioni di Eudosso stabilisce quando due rapporti sono uguali senza mai scriverli come un unico numero. La scoperta pitagorica dell'<strong>incommensurabilità</strong> della diagonale del quadrato con il suo lato — cioè che $\\sqrt{2}$ non è esprimibile come rapporto di interi — impose una distinzione netta fra ciò che oggi chiamiamo razionale e irrazionale, e spinse a un trattamento geometrico anziché numerico.</p>
+
+<h3>India: le regole operative</h3>
+<p>È in India che le frazioni diventano oggetti su cui si calcola liberamente. <strong>Brahmagupta</strong>, nel <em>Brāhmasphuṭasiddhānta</em> (628 d.C.), enuncia regole generali per somma, differenza, prodotto e quoziente, e le estende con coerenza ai numeri negativi. Numeratore e denominatore venivano scritti uno sopra l'altro, <em>senza</em> linea di separazione. Cinque secoli dopo <strong>Bhāskara II</strong> sistematizza il tutto nel <em>Līlāvatī</em>, con problemi ancora oggi riconoscibili.</p>
+
+<h3>Il mondo arabo e la linea di frazione</h3>
+<p>Il matematico maghrebino <strong>al-Ḥaṣṣār</strong>, intorno al 1175, è il primo di cui si abbia testimonianza a tracciare la <strong>linea orizzontale</strong> fra i due numeri. È un'innovazione tipografica, ma con una portata concettuale enorme: la linea rende la frazione un <em>singolo simbolo</em>, un oggetto unico su cui operare, e non più una coppia di numeri accostati.</p>
+
+<h3>L'Europa: Fibonacci e Stevino</h3>
+<p>Nel <em>Liber Abaci</em> (1202) <strong>Leonardo Pisano</strong>, detto Fibonacci, porta in Europa la notazione indo-araba insieme alla linea di frazione, e studia gli algoritmi per decomporre una frazione in frazioni unitarie. Nel 1585 <strong>Simon Stevin</strong>, con <em>De Thiende</em>, sostiene che i decimali dovrebbero sostituire le frazioni nella pratica quotidiana. Aveva ragione per il calcolo approssimato: ma le frazioni restano indispensabili per il calcolo <em>esatto</em>, perché $\\frac{1}{3}$ non ha rappresentazione decimale finita mentre come frazione è scritta senza alcuna perdita.</p>
+
+<h3>L'Ottocento: la definizione rigorosa</h3>
+<p>Solo nel XIX secolo la frazione riceve una definizione formale. L'insieme $\\mathbb{Q}$ viene costruito a partire da $\\mathbb{Z}$ come insieme delle <strong>coppie ordinate</strong> $(a,b)$ con $b\\neq 0$, sulle quali si dichiara la relazione di equivalenza</p>
+$$ (a,b)\\sim(c,d) \\iff ad=bc $$
+<p>Una frazione, in senso rigoroso, non è la coppia ma la sua <em>classe di equivalenza</em>: $\\frac{1}{2}$, $\\frac{2}{4}$ e $\\frac{50}{100}$ sono scritture diverse dello stesso oggetto. Le operazioni si definiscono sui rappresentanti e si dimostra che il risultato non dipende dalla scelta fatta. È da qui che discendono, come teoremi e non come convenzioni arbitrarie, tutte le regole che studierai nelle sezioni seguenti.</p>
+
+<div class="box">
+<span class="lab">Il filo conduttore</span>
+<p style="margin:0">Ogni tappa risponde alla stessa domanda con strumenti migliori: <em>come si scrive e come si calcola una parte dell'unità?</em> Le regole che seguono non sono capricci da memorizzare: sono le uniche compatibili con la richiesta che frazioni equivalenti diano sempre risultati equivalenti.</p>
+</div>
+</div>`},
+   {id:"timeline",label:"Linea del tempo",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Nove tappe</h2>
+<p>Le date antiche sono approssimate; la scala non è proporzionale.</p>
+<div class="scrollx">
+<svg class="tl" viewBox="0 0 940 260" role="img" aria-label="Linea del tempo della storia delle frazioni" style="min-width:820px">
+  <line x1="30" y1="130" x2="910" y2="130" stroke="var(--line-strong)" stroke-width="2"/>
+  <g font-size="12" fill="var(--muted)">
+    <g>
+      <circle cx="60" cy="130" r="7" fill="var(--fa)"/>
+      <line x1="60" y1="123" x2="60" y2="86" stroke="var(--line-strong)"/>
+      <text x="60" y="76" text-anchor="middle" font-weight="700" fill="var(--ink)">~1800 a.C.</text>
+      <text x="60" y="60" text-anchor="middle">Babilonia</text>
+      <text x="60" y="46" text-anchor="middle">base 60</text>
+    </g>
+    <g>
+      <circle cx="160" cy="130" r="7" fill="var(--fa)"/>
+      <line x1="160" y1="137" x2="160" y2="174" stroke="var(--line-strong)"/>
+      <text x="160" y="190" text-anchor="middle" font-weight="700" fill="var(--ink)">~1650 a.C.</text>
+      <text x="160" y="206" text-anchor="middle">Papiro di Rhind</text>
+      <text x="160" y="220" text-anchor="middle">frazioni unitarie</text>
+    </g>
+    <g>
+      <circle cx="285" cy="130" r="7" fill="var(--fa)"/>
+      <line x1="285" y1="123" x2="285" y2="86" stroke="var(--line-strong)"/>
+      <text x="285" y="76" text-anchor="middle" font-weight="700" fill="var(--ink)">~300 a.C.</text>
+      <text x="285" y="60" text-anchor="middle">Euclide, Eudosso</text>
+      <text x="285" y="46" text-anchor="middle">teoria dei rapporti</text>
+    </g>
+    <g>
+      <circle cx="410" cy="130" r="7" fill="var(--accent)"/>
+      <line x1="410" y1="137" x2="410" y2="174" stroke="var(--line-strong)"/>
+      <text x="410" y="190" text-anchor="middle" font-weight="700" fill="var(--ink)">628</text>
+      <text x="410" y="206" text-anchor="middle">Brahmagupta</text>
+      <text x="410" y="220" text-anchor="middle">regole operative</text>
+    </g>
+    <g>
+      <circle cx="520" cy="130" r="7" fill="var(--accent)"/>
+      <line x1="520" y1="123" x2="520" y2="86" stroke="var(--line-strong)"/>
+      <text x="520" y="76" text-anchor="middle" font-weight="700" fill="var(--ink)">~1150</text>
+      <text x="520" y="60" text-anchor="middle">Bhāskara II</text>
+      <text x="520" y="46" text-anchor="middle">Līlāvatī</text>
+    </g>
+    <g>
+      <circle cx="630" cy="130" r="7" fill="var(--accent)"/>
+      <line x1="630" y1="137" x2="630" y2="174" stroke="var(--line-strong)"/>
+      <text x="630" y="190" text-anchor="middle" font-weight="700" fill="var(--ink)">~1175</text>
+      <text x="630" y="206" text-anchor="middle">al-Ḥaṣṣār</text>
+      <text x="630" y="220" text-anchor="middle">la linea di frazione</text>
+    </g>
+    <g>
+      <circle cx="730" cy="130" r="7" fill="var(--fb)"/>
+      <line x1="730" y1="123" x2="730" y2="86" stroke="var(--line-strong)"/>
+      <text x="730" y="76" text-anchor="middle" font-weight="700" fill="var(--ink)">1202</text>
+      <text x="730" y="60" text-anchor="middle">Fibonacci</text>
+      <text x="730" y="46" text-anchor="middle">Liber Abaci</text>
+    </g>
+    <g>
+      <circle cx="825" cy="130" r="7" fill="var(--fb)"/>
+      <line x1="825" y1="137" x2="825" y2="174" stroke="var(--line-strong)"/>
+      <text x="825" y="190" text-anchor="middle" font-weight="700" fill="var(--ink)">1585</text>
+      <text x="825" y="206" text-anchor="middle">Stevin</text>
+      <text x="825" y="220" text-anchor="middle">De Thiende</text>
+    </g>
+    <g>
+      <circle cx="900" cy="130" r="7" fill="var(--fb)"/>
+      <line x1="900" y1="123" x2="900" y2="86" stroke="var(--line-strong)"/>
+      <text x="900" y="76" text-anchor="middle" font-weight="700" fill="var(--ink)">XIX sec.</text>
+      <text x="900" y="60" text-anchor="middle">costruzione</text>
+      <text x="900" y="46" text-anchor="middle">formale di Q</text>
+    </g>
+  </g>
+</svg>
+</div>
+<p class="simnote">Dalla decomposizione in frazioni unitarie alla classe di equivalenza: cambia il livello di astrazione, non il problema di partenza.</p>
+</div>`}
+  ]
+},
+
+/* ================= SEMPLIFICAZIONE ================= */
+{
+  id:"semplificazione", title:"Semplificazione",
+  sub:[
+   {id:"teoria",label:"Teoria",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Frazioni equivalenti e riduzione ai minimi termini</h2>
+
+<h3>Definizione</h3>
+<p>Una <span class="def">frazione</span> è una coppia ordinata di interi $\\frac{a}{b}$ con $b\\neq 0$. Due frazioni si dicono <strong>equivalenti</strong>, e rappresentano lo stesso numero razionale, quando</p>
+$$ \\frac{a}{b}=\\frac{c}{d} \\iff ad=bc $$
+<p>Il numero razionale è, propriamente, la classe di tutte le frazioni fra loro equivalenti. Ogni frazione della classe ne è un <em>rappresentante</em>.</p>
+
+<h3>Proprietà invariantiva</h3>
+<p>Per ogni intero $k\\neq 0$:</p>
+$$ \\frac{a}{b}=\\frac{a\\cdot k}{b\\cdot k} \\qquad\\text{e}\\qquad \\frac{a}{b}=\\frac{a:k}{b:k}\\ \\ \\text{se } k \\text{ divide sia } a \\text{ sia } b $$
+<p>La verifica è immediata con la definizione: $a(bk)=b(ak)$. La condizione $k\\neq0$ è essenziale, perché $\\frac{a\\cdot 0}{b\\cdot 0}=\\frac{0}{0}$ non è nemmeno una frazione.</p>
+
+<h3>Riduzione ai minimi termini</h3>
+<p>Una frazione è <span class="def">ridotta ai minimi termini</span> (o irriducibile) quando</p>
+$$ \\mathrm{MCD}(|a|,|b|)=1 $$
+<p>cioè quando numeratore e denominatore sono <strong>coprimi</strong>. Per ridurre una frazione si divide numeratore e denominatore per il loro MCD: un solo passaggio è sufficiente, perché dopo la divisione i due numeri non hanno più fattori comuni. Dividere per un divisore comune qualsiasi funziona ugualmente, ma richiede più passaggi.</p>
+
+<div class="box note">
+<span class="lab">Attenzione al MCD, non al mcm</span>
+<p style="margin:0">Per <em>semplificare</em> serve il <strong>massimo comune divisore</strong>. Il minimo comune multiplo serve invece per <em>sommare</em>. Sono strumenti diversi per problemi diversi.</p>
+</div>
+
+<h3>Teorema di unicità</h3>
+<p>Ogni numero razionale ammette <strong>una e una sola</strong> rappresentazione $\\frac{a}{b}$ con $b>0$ e $\\mathrm{MCD}(|a|,b)=1$. Questa forma è detta <em>forma canonica</em> ed è ciò che si intende quando si chiede il risultato "ridotto ai minimi termini".</p>
+
+<h3>Segni</h3>
+<p>Il segno appartiene alla frazione nel suo complesso:</p>
+$$ \\frac{-a}{b}=\\frac{a}{-b}=-\\frac{a}{b}, \\qquad \\frac{-a}{-b}=\\frac{a}{b} $$
+<p>Per convenzione il denominatore si scrive positivo e l'eventuale segno si porta davanti alla linea di frazione.</p>
+
+<h3>Come si semplifica correttamente</h3>
+<p>Si possono elidere solo <strong>fattori</strong>, mai addendi. Con la scomposizione in fattori primi l'operazione diventa meccanica:</p>
+$$ \\frac{84}{126}=\\frac{2^2\\cdot 3\\cdot 7}{2\\cdot 3^2\\cdot 7}=\\frac{2}{3} $$
+
+<div class="box care">
+<span class="lab">Errore da evitare</span>
+<p style="margin:0">$\\frac{a+c}{b+c}\\neq\\frac{a}{b}$. In $\\frac{2+3}{5+3}=\\frac{5}{8}$ non si può "cancellare il 3": la proprietà invariantiva riguarda la moltiplicazione e la divisione, non l'addizione. Analogamente in $\\frac{3+6}{6}$ il 6 non si elide, perché al numeratore è un addendo.</p>
+</div>
+
+<h3>Casi particolari</h3>
+<ul>
+<li><strong>Frazione apparente</strong>: il numeratore è multiplo del denominatore, e la frazione si riduce a un intero ($\\frac{12}{4}=3$).</li>
+<li><strong>Frazione propria</strong>: $|a|<|b|$, il valore è compreso fra $-1$ e $1$.</li>
+<li><strong>Frazione impropria</strong>: $|a|>|b|$ e non apparente.</li>
+<li>Se $a=0$, allora $\\frac{0}{b}=0$ per ogni $b\\neq0$: la forma canonica è $\\frac{0}{1}$.</li>
+</ul>
+</div>`},
+   {id:"sim",label:"Simulazione",type:"sim",sim:"semplificazione",
+    intro:"Muovi numeratore e denominatore: il ciclo mostra le celle della frazione di partenza che si fondono in gruppi di ampiezza pari al MCD, fino alla frazione ridotta. La linea tratteggiata verifica che la porzione di intero non cambia."},
+   {id:"esercizi",label:"Esercizi",type:"ex",items:[
+     {t:"Riduci ai minimi termini: $\\frac{72}{120}$.",
+      h:"Scomponi: $72=2^3\\cdot3^2$ e $120=2^3\\cdot3\\cdot5$. Il MCD è il prodotto dei fattori comuni con l'esponente minore.",
+      s:"$\\mathrm{MCD}(72,120)=2^3\\cdot3=24$, quindi $\\frac{72}{120}=\\frac{72:24}{120:24}=\\frac{3}{5}$."},
+     {t:"Stabilisci se $\\frac{18}{42}$ e $\\frac{21}{49}$ sono equivalenti.",
+      h:"Puoi usare il criterio $ad=bc$ oppure ridurre entrambe alla forma canonica e confrontarle.",
+      s:"$18\\cdot49=882$ e $42\\cdot21=882$: sono uguali, quindi le frazioni sono equivalenti. In effetti entrambe si riducono a $\\frac{3}{7}$."},
+     {t:"Determina l'intero $k$ tale che $\\frac{k}{45}=\\frac{4}{9}$.",
+      h:"Da $\\frac{k}{45}=\\frac{4}{9}$ segue $9k=45\\cdot4$; in alternativa osserva per quale numero è stato moltiplicato il denominatore.",
+      s:"$9k=180$, quindi $k=20$. Infatti $45=9\\cdot5$ e allora $k=4\\cdot5=20$: $\\frac{20}{45}=\\frac{4}{9}$."},
+     {t:"Scrivi $\\frac{-24}{-60}$ in forma canonica.",
+      h:"Prima sistema i segni: due segni negativi danno una frazione positiva. Poi riduci.",
+      s:"$\\frac{-24}{-60}=\\frac{24}{60}$ e $\\mathrm{MCD}(24,60)=12$, quindi la forma canonica è $\\frac{2}{5}$."},
+     {t:"Spiega perché $\\frac{5+10}{10}$ non vale $\\frac{5}{1}$, e calcola il valore corretto.",
+      h:"Al numeratore il 10 è un addendo, non un fattore: la proprietà invariantiva non si applica agli addendi.",
+      s:"Si deve prima eseguire la somma: $\\frac{5+10}{10}=\\frac{15}{10}=\\frac{3}{2}$. La semplificazione è lecita solo dopo aver ottenuto un unico fattore al numeratore."},
+     {t:"Trova tutte le frazioni con denominatore minore di 20 equivalenti a $\\frac{3}{4}$.",
+      h:"Sono tutte della forma $\\frac{3k}{4k}$ con $k$ intero positivo: basta imporre $4k<20$.",
+      s:"$4k<20$ dà $k\\in\\{1,2,3,4\\}$, quindi $\\frac{3}{4},\\frac{6}{8},\\frac{9}{12},\\frac{12}{16}$."}
+   ]},
+   {id:"quiz",label:"Quiz",type:"quiz"}
+  ]
+},
+
+/* ================= ADDIZIONE ================= */
+{
+  id:"addizione", title:"Addizione e sottrazione",
+  sub:[
+   {id:"teoria",label:"Teoria",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Somma e differenza di frazioni</h2>
+
+<h3>Il caso immediato: stesso denominatore</h3>
+<p>Se le parti hanno la stessa ampiezza si possono contare direttamente:</p>
+$$ \\frac{a}{c}+\\frac{b}{c}=\\frac{a+b}{c} $$
+<p>Il denominatore <strong>non</strong> si somma: esso dichiara <em>in quante parti</em> è diviso l'intero, e quella suddivisione resta la stessa. Sommando tre quinti e un quinto si ottengono quattro quinti, non quattro decimi.</p>
+
+<h3>Definizione generale</h3>
+<p>Nel caso di denominatori diversi si riconducono le due frazioni a una suddivisione comune:</p>
+$$ \\frac{a}{b}+\\frac{c}{d}=\\frac{ad+bc}{bd} \\qquad\\qquad \\frac{a}{b}-\\frac{c}{d}=\\frac{ad-bc}{bd} $$
+<p>Questa è la definizione formale dell'addizione in $\\mathbb{Q}$. Si dimostra che il risultato <em>non dipende dai rappresentanti scelti</em>: sostituendo $\\frac{a}{b}$ con una frazione equivalente si ottiene una somma equivalente. È la condizione che rende l'operazione ben definita sulle classi.</p>
+
+<h3>Il metodo del minimo comune denominatore</h3>
+<p>Il prodotto $bd$ è sempre un denominatore comune, ma non il più piccolo. Conviene usare $m=\\mathrm{mcm}(b,d)$:</p>
+<ol>
+<li>calcolare $m=\\mathrm{mcm}(b,d)$;</li>
+<li>per ciascuna frazione, moltiplicare numeratore e denominatore per $m:b$ e $m:d$ rispettivamente (proprietà invariantiva);</li>
+<li>sommare o sottrarre i numeratori, mantenendo il denominatore $m$;</li>
+<li>ridurre il risultato ai minimi termini.</li>
+</ol>
+<p>Esempio: $\\frac{5}{6}-\\frac{3}{8}$ con $\\mathrm{mcm}(6,8)=24$ diventa $\\frac{20}{24}-\\frac{9}{24}=\\frac{11}{24}$.</p>
+
+<div class="box note">
+<span class="lab">Perché il mcm</span>
+<p style="margin:0">Usare $bd$ non è un errore: porta allo stesso numero razionale, solo scritto con numeri più grandi che andranno poi semplificati. Il mcm riduce la fatica di calcolo, non cambia il risultato.</p>
+</div>
+
+<h3>Struttura algebrica</h3>
+<p>L'addizione fra razionali è <strong>commutativa</strong> e <strong>associativa</strong>, ha elemento neutro $0=\\frac{0}{1}$ e ogni elemento ha un <strong>opposto</strong>:</p>
+$$ \\frac{a}{b}+\\left(-\\frac{a}{b}\\right)=0 $$
+<p>La sottrazione si definisce proprio come somma dell'opposto: $x-y=x+(-y)$. Non è né commutativa né associativa.</p>
+
+<h3>Numeri misti</h3>
+<p>Una scrittura come $2\\frac{1}{3}$ significa $2+\\frac{1}{3}=\\frac{7}{3}$. Nel calcolo algebrico è opportuno convertirla subito in frazione, perché l'accostamento fra numeri di solito indica un prodotto e la scrittura può generare ambiguità.</p>
+
+<div class="box care">
+<span class="lab">Errori frequenti</span>
+<ul style="margin:.3em 0 0">
+<li>$\\frac{a}{b}+\\frac{c}{d}\\neq\\frac{a+c}{b+d}$: sommare "in orizzontale" non è l'addizione (quella operazione produce un valore compreso fra le due frazioni, ma non la loro somma).</li>
+<li>Nella sottrazione con numeratori compositi il segno si distribuisce su tutto il numeratore: $\\frac{7}{12}-\\frac{5-2}{12}=\\frac{7-(5-2)}{12}=\\frac{4}{12}=\\frac{1}{3}$.</li>
+</ul>
+</div>
+</div>`},
+   {id:"sim",label:"Simulazione",type:"sim",sim:"addizione",
+    intro:"La frazione A è in ciano, la B in ambra: due colori distinti per seguirle separatamente prima che si sovrappongano sulla barra risultato. Il ciclo attraversa le fasi del procedimento: denominatori diversi, riduzione al mcm, unione (o sottrazione) delle parti."},
+   {id:"esercizi",label:"Esercizi",type:"ex",items:[
+     {t:"Calcola $\\frac{2}{3}+\\frac{1}{4}$.",
+      h:"$\\mathrm{mcm}(3,4)=12$. Moltiplica la prima per $\\frac{4}{4}$ e la seconda per $\\frac{3}{3}$.",
+      s:"$\\frac{2}{3}+\\frac{1}{4}=\\frac{8}{12}+\\frac{3}{12}=\\frac{11}{12}$, già ridotta."},
+     {t:"Calcola $\\frac{7}{12}-\\frac{5}{18}$.",
+      h:"$12=2^2\\cdot3$ e $18=2\\cdot3^2$: il mcm si ottiene prendendo ogni fattore con l'esponente massimo.",
+      s:"$\\mathrm{mcm}(12,18)=2^2\\cdot3^2=36$; $\\frac{21}{36}-\\frac{10}{36}=\\frac{11}{36}$."},
+     {t:"Calcola $\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}$.",
+      h:"Un unico denominatore comune per tutte e tre: $\\mathrm{mcm}(2,3,6)=6$.",
+      s:"$\\frac{3}{6}+\\frac{2}{6}+\\frac{1}{6}=\\frac{6}{6}=1$."},
+     {t:"Determina $x$ tale che $\\frac{3}{10}+x=\\frac{4}{5}$.",
+      h:"Isola $x$: $x=\\frac{4}{5}-\\frac{3}{10}$, con denominatore comune 10.",
+      s:"$x=\\frac{8}{10}-\\frac{3}{10}=\\frac{5}{10}=\\frac{1}{2}$."},
+     {t:"Un serbatoio è pieno per $\\frac{3}{8}$; se ne aggiunge una quantità pari a $\\frac{5}{12}$ della capacità. Quanto resta da riempire?",
+      h:"Somma le due parti presenti, poi sottrai il totale da 1, cioè da $\\frac{24}{24}$.",
+      s:"$\\frac{3}{8}+\\frac{5}{12}=\\frac{9}{24}+\\frac{10}{24}=\\frac{19}{24}$; resta $1-\\frac{19}{24}=\\frac{5}{24}$ della capacità."},
+     {t:"Verifica che $\\frac{a}{b}+\\frac{c}{d}$ dà lo stesso risultato usando $\\frac{2}{6}$ oppure $\\frac{1}{3}$ come primo addendo, con $\\frac{1}{4}$ come secondo.",
+      h:"Calcola le due somme separatamente e riduci entrambi i risultati alla forma canonica.",
+      s:"$\\frac{2}{6}+\\frac{1}{4}=\\frac{4}{12}+\\frac{3}{12}=\\frac{7}{12}$ e $\\frac{1}{3}+\\frac{1}{4}=\\frac{4}{12}+\\frac{3}{12}=\\frac{7}{12}$: l'operazione è ben definita sulle classi di equivalenza, come deve essere."}
+   ]},
+   {id:"quiz",label:"Quiz",type:"quiz"}
+  ]
+},
+
+/* ================= MOLTIPLICAZIONE ================= */
+{
+  id:"moltiplicazione", title:"Moltiplicazione",
+  sub:[
+   {id:"teoria",label:"Teoria",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Prodotto di frazioni</h2>
+
+<h3>Definizione</h3>
+$$ \\frac{a}{b}\\cdot\\frac{c}{d}=\\frac{a\\cdot c}{b\\cdot d} \\qquad (b\\neq0,\\ d\\neq0) $$
+<p>È l'operazione più semplice da eseguire e la meno intuitiva da giustificare. Anche in questo caso si dimostra che il risultato non dipende dai rappresentanti scelti.</p>
+
+<h3>Perché è così: il modello ad area</h3>
+<p>Moltiplicare per una frazione significa prenderne una parte. Consideriamo un quadrato di area 1. Selezionandone $\\frac{a}{b}$ in orizzontale e $\\frac{c}{d}$ in verticale, la griglia risultante ha $b\\cdot d$ celle uguali e la regione comune ne contiene $a\\cdot c$: la parte comune vale dunque $\\frac{ac}{bd}$. La preposizione "di" traduce la moltiplicazione: <em>i due terzi dei tre quarti</em> sono $\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{6}{12}=\\frac{1}{2}$.</p>
+
+<h3>Semplificazione preventiva</h3>
+<p>Poiché numeratori e denominatori si moltiplicano fra loro, ogni fattore comune a un numeratore e a un denominatore <em>qualsiasi</em> può essere elidato prima di eseguire i prodotti:</p>
+$$ \\frac{5}{8}\\cdot\\frac{12}{25}=\\frac{\\cancel{5}^{\\,1}}{\\cancel{8}^{\\,2}}\\cdot\\frac{\\cancel{12}^{\\,3}}{\\cancel{25}^{\\,5}}=\\frac{1\\cdot3}{2\\cdot5}=\\frac{3}{10} $$
+<p>Questo è lecito perché il prodotto è un'unica frazione $\\frac{5\\cdot12}{8\\cdot25}$ e la semplificazione agisce sui suoi fattori. <strong>Non</strong> è invece lecito farlo nell'addizione, dove i numeratori non diventano fattori di un'unica frazione.</p>
+
+<h3>Proprietà</h3>
+<ul>
+<li><strong>Commutativa</strong> e <strong>associativa</strong>.</li>
+<li>Elemento neutro $1=\\frac{1}{1}$.</li>
+<li><strong>Elemento inverso</strong>: ogni frazione con $a\\neq0$ ammette il reciproco $\\frac{b}{a}$, e $\\frac{a}{b}\\cdot\\frac{b}{a}=1$. È la proprietà che distingue $\\mathbb{Q}$ da $\\mathbb{Z}$ e che rende possibile la divisione.</li>
+<li><strong>Legge di annullamento</strong>: il prodotto è nullo se e solo se almeno un fattore è nullo.</li>
+<li><strong>Distributiva</strong> rispetto ad addizione e sottrazione: $\\frac{a}{b}\\left(\\frac{c}{d}+\\frac{e}{f}\\right)=\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{a}{b}\\cdot\\frac{e}{f}$.</li>
+</ul>
+
+<h3>Segni</h3>
+<p>Valgono le regole dei segni degli interi: il prodotto di due frazioni di segno concorde è positivo, di segno discorde è negativo.</p>
+
+<div class="box care">
+<span class="lab">Contro l'intuizione</span>
+<p style="margin:0">Moltiplicare <em>non</em> significa sempre ingrandire. Se entrambi i fattori sono compresi fra 0 e 1, il prodotto è minore di ciascuno di essi: $\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$. Moltiplicare per una frazione minore di 1 rimpicciolisce; per una maggiore di 1 ingrandisce; per 1 lascia invariato.</p>
+</div>
+
+<h3>Prodotto per un intero</h3>
+<p>Un intero $n$ si scrive $\\frac{n}{1}$, dunque $n\\cdot\\frac{a}{b}=\\frac{na}{b}$: si moltiplica solo il numeratore. Coerentemente, $\\frac{a}{b}+\\frac{a}{b}+\\frac{a}{b}=3\\cdot\\frac{a}{b}=\\frac{3a}{b}$.</p>
+</div>`},
+   {id:"sim",label:"Simulazione",type:"sim",sim:"moltiplicazione",
+    intro:"Il quadrato ha area 1. Le colonne ciano rappresentano la prima frazione, le righe ambra la seconda: il prodotto è la regione comune, tratteggiata in movimento. Conta le celle e confronta con la formula."},
+   {id:"esercizi",label:"Esercizi",type:"ex",items:[
+     {t:"Calcola $\\frac{3}{4}\\cdot\\frac{2}{9}$.",
+      h:"Prima di moltiplicare, semplifica 3 con 9 e 2 con 4.",
+      s:"$\\frac{3}{4}\\cdot\\frac{2}{9}=\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$."},
+     {t:"Calcola $\\frac{5}{8}\\cdot\\frac{12}{25}$.",
+      h:"5 si semplifica con 25, mentre 12 si semplifica con 8 (fattore comune 4).",
+      s:"$\\frac{1}{2}\\cdot\\frac{3}{5}=\\frac{3}{10}$."},
+     {t:"Calcola i $\\frac{3}{5}$ di $\\frac{10}{21}$.",
+      h:"«di» indica il prodotto: imposta $\\frac{3}{5}\\cdot\\frac{10}{21}$.",
+      s:"$\\frac{3}{5}\\cdot\\frac{10}{21}=\\frac{1}{1}\\cdot\\frac{2}{7}=\\frac{2}{7}$."},
+     {t:"Determina il reciproco di $-\\frac{7}{3}$ e verifica il prodotto.",
+      h:"Il reciproco si ottiene scambiando numeratore e denominatore; il segno resta negativo.",
+      s:"Il reciproco è $-\\frac{3}{7}$, e infatti $\\left(-\\frac{7}{3}\\right)\\cdot\\left(-\\frac{3}{7}\\right)=\\frac{21}{21}=1$."},
+     {t:"Applica la proprietà distributiva a $\\frac{2}{3}\\left(\\frac{3}{4}+\\frac{9}{8}\\right)$ e confronta con il calcolo diretto.",
+      h:"Distribuita: $\\frac{2}{3}\\cdot\\frac{3}{4}+\\frac{2}{3}\\cdot\\frac{9}{8}$. Diretta: prima la somma in parentesi.",
+      s:"Distribuita: $\\frac{1}{2}+\\frac{3}{4}=\\frac{5}{4}$. Diretta: $\\frac{3}{4}+\\frac{9}{8}=\\frac{15}{8}$, poi $\\frac{2}{3}\\cdot\\frac{15}{8}=\\frac{5}{4}$. I due percorsi coincidono."},
+     {t:"Una tavola lunga $\\frac{9}{5}$ di metro viene ridotta ai $\\frac{5}{6}$ della sua lunghezza. Quanto misura?",
+      h:"Ridurre ai $\\frac{5}{6}$ significa moltiplicare per $\\frac{5}{6}$.",
+      s:"$\\frac{9}{5}\\cdot\\frac{5}{6}=\\frac{9}{6}=\\frac{3}{2}$ di metro, cioè 1,5 m."}
+   ]},
+   {id:"quiz",label:"Quiz",type:"quiz"}
+  ]
+},
+
+/* ================= DIVISIONE ================= */
+{
+  id:"divisione", title:"Divisione",
+  sub:[
+   {id:"teoria",label:"Teoria",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Quoziente di frazioni</h2>
+
+<h3>Definizione</h3>
+<p>Dividere significa risolvere un problema di moltiplicazione: $x=\\frac{a}{b}\\div\\frac{c}{d}$ è l'<em>unico</em> numero razionale tale che $\\frac{c}{d}\\cdot x=\\frac{a}{b}$. Tale numero esiste ed è unico purché $\\frac{c}{d}\\neq0$, e si ottiene moltiplicando per il reciproco:</p>
+$$ \\frac{a}{b}\\div\\frac{c}{d}=\\frac{a}{b}\\cdot\\frac{d}{c}=\\frac{a\\cdot d}{b\\cdot c} \\qquad (b,c,d\\neq 0) $$
+
+<h3>Perché si moltiplica per il reciproco</h3>
+<p>Non è una convenzione mnemonica, ma una conseguenza. Partendo da $\\frac{c}{d}\\cdot x=\\frac{a}{b}$ e moltiplicando entrambi i membri per $\\frac{d}{c}$:</p>
+$$ \\frac{d}{c}\\cdot\\frac{c}{d}\\cdot x=\\frac{d}{c}\\cdot\\frac{a}{b} \\;\\Longrightarrow\\; 1\\cdot x=\\frac{ad}{bc} $$
+<p>Il passaggio usa esattamente l'esistenza dell'inverso moltiplicativo. La condizione $c\\neq0$ è indispensabile: senza reciproco l'equazione $0\\cdot x=\\frac{a}{b}$ non ha soluzione (se $a\\neq0$) oppure ne ha infinite (se $a=0$).</p>
+
+<h3>Lettura come misura</h3>
+<p>$\\frac{a}{b}\\div\\frac{c}{d}$ risponde alla domanda: <em>quante volte il divisore è contenuto nel dividendo?</em> Ad esempio $\\frac{3}{4}\\div\\frac{1}{8}=6$ perché in tre quarti stanno sei ottavi. È questa lettura che rende comprensibile il risultato apparentemente strano della divisione per una frazione minore di 1.</p>
+
+<div class="box care">
+<span class="lab">Contro l'intuizione</span>
+<p style="margin:0">Dividere <em>non</em> significa sempre rimpicciolire. Se il divisore è compreso fra 0 e 1, il quoziente è <strong>maggiore</strong> del dividendo, perché una quantità piccola è contenuta molte volte. Se il divisore è maggiore di 1, il quoziente è minore del dividendo.</p>
+</div>
+
+<h3>Frazioni di frazioni</h3>
+<p>Una frazione i cui termini sono a loro volta frazioni si chiama <span class="def">frazione complessa</span> e indica una divisione:</p>
+$$ \\dfrac{\\ \\frac{3}{5}\\ }{\\ \\frac{9}{10}\\ }=\\frac{3}{5}\\div\\frac{9}{10}=\\frac{3}{5}\\cdot\\frac{10}{9}=\\frac{2}{3} $$
+<p>La linea di frazione principale, più lunga, ha valore di parentesi: separa ciò che sta sopra da ciò che sta sotto.</p>
+
+<h3>Proprietà</h3>
+<ul>
+<li>La divisione <strong>non</strong> è commutativa: $\\frac{a}{b}\\div\\frac{c}{d}\\neq\\frac{c}{d}\\div\\frac{a}{b}$ (i due risultati sono l'uno il reciproco dell'altro).</li>
+<li>Non è associativa: in $a\\div b\\div c$ l'ordine va fissato con le parentesi; in assenza di parentesi si procede da sinistra a destra.</li>
+<li>Vale la distributiva a destra: $\\left(\\frac{a}{b}+\\frac{c}{d}\\right)\\div\\frac{e}{f}=\\frac{a}{b}\\div\\frac{e}{f}+\\frac{c}{d}\\div\\frac{e}{f}$, ma <em>non</em> a sinistra.</li>
+<li>Divisione per un intero: $\\frac{a}{b}\\div n=\\frac{a}{b}\\cdot\\frac{1}{n}=\\frac{a}{bn}$.</li>
+</ul>
+
+<div class="box note">
+<span class="lab">Il reciproco esiste sempre, tranne per lo zero</span>
+<p style="margin:0">In $\\mathbb{Q}$ ogni elemento diverso da zero ha inverso moltiplicativo: per questo la divisione è sempre possibile tranne che per zero. In $\\mathbb{Z}$ non è così, ed è la ragione per cui $\\mathbb{Z}$ non basta.</p>
+</div>
+</div>`},
+   {id:"sim",label:"Simulazione",type:"sim",sim:"divisione",
+    intro:"Il segmento ciano è il dividendo; le unità ambra, lunghe quanto il divisore, avanzano una alla volta e contano quante volte esso vi è contenuto. L'ultima unità, se tratteggiata, è parziale: corrisponde alla parte frazionaria del quoziente."},
+   {id:"esercizi",label:"Esercizi",type:"ex",items:[
+     {t:"Calcola $\\frac{3}{4}\\div\\frac{2}{5}$.",
+      h:"Trasforma in prodotto per il reciproco del divisore: $\\frac{3}{4}\\cdot\\frac{5}{2}$.",
+      s:"$\\frac{3}{4}\\cdot\\frac{5}{2}=\\frac{15}{8}$. Il risultato è maggiore del dividendo perché il divisore è minore di 1."},
+     {t:"Calcola $\\frac{5}{6}\\div\\frac{10}{3}$.",
+      h:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: semplifica 5 con 10 e 3 con 6 prima di moltiplicare.",
+      s:"$\\frac{5}{6}\\cdot\\frac{3}{10}=\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
+     {t:"Semplifica la frazione complessa $\\dfrac{\\ \\frac{7}{9}\\ }{\\ \\frac{14}{3}\\ }$.",
+      h:"La linea principale è una divisione: $\\frac{7}{9}\\div\\frac{14}{3}$.",
+      s:"$\\frac{7}{9}\\cdot\\frac{3}{14}=\\frac{1}{3}\\cdot\\frac{1}{2}=\\frac{1}{6}$."},
+     {t:"Quante bottiglie da $\\frac{3}{8}$ di litro si riempiono con $\\frac{9}{4}$ di litro?",
+      h:"È una divisione di misura: $\\frac{9}{4}\\div\\frac{3}{8}$.",
+      s:"$\\frac{9}{4}\\cdot\\frac{8}{3}=\\frac{72}{12}=6$ bottiglie esatte."},
+     {t:"Risolvi $\\frac{2}{7}\\cdot x=\\frac{4}{21}$.",
+      h:"Isola $x$ dividendo entrambi i membri per $\\frac{2}{7}$, cioè moltiplicando per $\\frac{7}{2}$.",
+      s:"$x=\\frac{4}{21}\\cdot\\frac{7}{2}=\\frac{28}{42}=\\frac{2}{3}$."},
+     {t:"Spiega perché $\\frac{5}{6}\\div\\frac{5}{6}\\div\\frac{5}{6}$ richiede una convenzione, e calcola il valore.",
+      h:"Senza parentesi si procede da sinistra a destra: prima le prime due, poi il risultato diviso la terza.",
+      s:"$\\left(\\frac{5}{6}\\div\\frac{5}{6}\\right)\\div\\frac{5}{6}=1\\div\\frac{5}{6}=\\frac{6}{5}$, mentre $\\frac{5}{6}\\div\\left(\\frac{5}{6}\\div\\frac{5}{6}\\right)=\\frac{5}{6}$. La divisione non è associativa, quindi l'ordine va stabilito: da sinistra a destra il risultato è $\\frac{6}{5}$."}
+   ]},
+   {id:"quiz",label:"Quiz",type:"quiz"}
+  ]
+},
+
+/* ================= POTENZA ================= */
+{
+  id:"potenza", title:"Potenza",
+  sub:[
+   {id:"teoria",label:"Teoria",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Potenze di frazioni</h2>
+
+<h3>Esponente naturale</h3>
+<p>Per $n$ intero positivo, la potenza è un prodotto ripetuto, e dalla regola del prodotto segue immediatamente:</p>
+$$ \\left(\\frac{a}{b}\\right)^{n}=\\underbrace{\\frac{a}{b}\\cdot\\frac{a}{b}\\cdots\\frac{a}{b}}_{n\\ \\text{fattori}}=\\frac{a^{n}}{b^{n}} $$
+<p>L'esponente si applica <strong>sia</strong> al numeratore <strong>sia</strong> al denominatore. È un errore frequente elevare solo il numeratore.</p>
+
+<h3>Esponente nullo</h3>
+$$ \\left(\\frac{a}{b}\\right)^{0}=1 \\qquad \\text{con } a\\neq0 $$
+<p>Non è una definizione arbitraria: perché resti valida la regola $x^{m}:x^{n}=x^{m-n}$, ponendo $m=n$ si ottiene $x^{0}=x^{m}:x^{m}=1$. La condizione $a\\neq0$ è necessaria: $0^{0}$ non è definito.</p>
+
+<h3>Esponente negativo</h3>
+$$ \\left(\\frac{a}{b}\\right)^{-n}=\\left(\\frac{b}{a}\\right)^{n}=\\frac{b^{n}}{a^{n}} \\qquad (a\\neq0) $$
+<p>Anche questa segue dalla coerenza con le proprietà: da $x^{0}=x^{n}\\cdot x^{-n}=1$ discende che $x^{-n}$ è il reciproco di $x^{n}$. In pratica: <em>esponente negativo significa ribaltare la frazione e cambiare segno all'esponente</em>. Il segno dell'esponente non ha alcun effetto sul segno del risultato.</p>
+
+<h3>Proprietà delle potenze</h3>
+<div class="scrollx">
+<table>
+<tr><th>Proprietà</th><th>Formula</th><th>Esempio</th></tr>
+<tr><td>Prodotto, stessa base</td><td>$x^{m}\\cdot x^{n}=x^{m+n}$</td><td>$\\left(\\frac{2}{3}\\right)^{2}\\cdot\\left(\\frac{2}{3}\\right)^{3}=\\left(\\frac{2}{3}\\right)^{5}$</td></tr>
+<tr><td>Quoziente, stessa base</td><td>$x^{m}: x^{n}=x^{m-n}$</td><td>$\\left(\\frac{5}{4}\\right)^{6}:\\left(\\frac{5}{4}\\right)^{2}=\\left(\\frac{5}{4}\\right)^{4}$</td></tr>
+<tr><td>Potenza di potenza</td><td>$\\left(x^{m}\\right)^{n}=x^{mn}$</td><td>$\\left(\\left(\\frac{2}{3}\\right)^{2}\\right)^{2}=\\left(\\frac{2}{3}\\right)^{4}=\\frac{16}{81}$</td></tr>
+<tr><td>Prodotto, stesso esponente</td><td>$x^{n}\\cdot y^{n}=(xy)^{n}$</td><td>$\\left(\\frac{2}{3}\\right)^{3}\\cdot\\left(\\frac{3}{5}\\right)^{3}=\\left(\\frac{2}{5}\\right)^{3}$</td></tr>
+<tr><td>Quoziente, stesso esponente</td><td>$x^{n}: y^{n}=\\left(x:y\\right)^{n}$</td><td>$\\left(\\frac{4}{9}\\right)^{2}:\\left(\\frac{2}{3}\\right)^{2}=\\left(\\frac{2}{3}\\right)^{2}$</td></tr>
+</table>
+</div>
+<p>Le prime tre richiedono la <strong>stessa base</strong>, le ultime due lo <strong>stesso esponente</strong>. Non esiste alcuna proprietà per $x^{m}+x^{n}$.</p>
+
+<h3>Segno del risultato</h3>
+<p>Se la base è negativa, il segno della potenza dipende dalla parità dell'esponente: pari dà risultato positivo, dispari negativo.</p>
+$$ \\left(-\\frac{2}{3}\\right)^{2}=\\frac{4}{9}, \\qquad \\left(-\\frac{2}{3}\\right)^{3}=-\\frac{8}{27} $$
+
+<div class="box care">
+<span class="lab">La parentesi non è decorativa</span>
+<p style="margin:0">$\\left(-\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$ mentre $-\\left(\\frac{2}{3}\\right)^{2}=-\\frac{4}{9}$: nel secondo caso il segno meno è fuori dalla potenza e non viene elevato. Analogamente $\\left(\\frac{2}{3}\\right)^{2}\\neq\\frac{2^{2}}{3}$.</p>
+</div>
+
+<h3>Comportamento al crescere dell'esponente</h3>
+<ul>
+<li>Se $0<\\frac{a}{b}<1$, le potenze <strong>decrescono</strong> e tendono a 0.</li>
+<li>Se $\\frac{a}{b}>1$, le potenze <strong>crescono</strong> illimitatamente.</li>
+<li>Se $\\frac{a}{b}=1$, restano costantemente 1.</li>
+</ul>
+</div>`},
+   {id:"sim",label:"Simulazione",type:"sim",sim:"potenza",
+    intro:"A ogni passo si prende la stessa frazione della figura precedente: dopo n passi l'area vale la potenza n-esima. Con esponente negativo la costruzione riparte dalla base ribaltata. Sulla retta a destra si vede se la successione tende a zero o cresce."},
+   {id:"esercizi",label:"Esercizi",type:"ex",items:[
+     {t:"Calcola $\\left(\\frac{2}{3}\\right)^{3}$.",
+      h:"L'esponente si applica a numeratore e denominatore separatamente.",
+      s:"$\\frac{2^{3}}{3^{3}}=\\frac{8}{27}$."},
+     {t:"Calcola $\\left(\\frac{3}{5}\\right)^{-2}$.",
+      h:"Esponente negativo: ribalta la base e cambia il segno all'esponente.",
+      s:"$\\left(\\frac{5}{3}\\right)^{2}=\\frac{25}{9}$."},
+     {t:"Calcola $\\left(-\\frac{1}{2}\\right)^{4}\\cdot\\left(-\\frac{1}{2}\\right)^{-6}$.",
+      h:"Stessa base: si sommano gli esponenti, $4+(-6)=-2$.",
+      s:"$\\left(-\\frac{1}{2}\\right)^{-2}=(-2)^{2}=4$."},
+     {t:"Semplifica $\\dfrac{\\left(\\frac{3}{4}\\right)^{5}}{\\left(\\frac{3}{4}\\right)^{3}}$.",
+      h:"Quoziente di potenze con la stessa base: si sottraggono gli esponenti.",
+      s:"$\\left(\\frac{3}{4}\\right)^{2}=\\frac{9}{16}$."},
+     {t:"Scrivi come un'unica potenza: $\\left(\\frac{4}{9}\\right)^{3}\\cdot\\left(\\frac{3}{2}\\right)^{3}$.",
+      h:"Stesso esponente: si moltiplicano le basi. Semplifica il prodotto delle basi prima di elevare.",
+      s:"$\\frac{4}{9}\\cdot\\frac{3}{2}=\\frac{2}{3}$, quindi il risultato è $\\left(\\frac{2}{3}\\right)^{3}=\\frac{8}{27}$."},
+     {t:"Confronta $\\left(-\\frac{3}{2}\\right)^{2}$ e $-\\left(\\frac{3}{2}\\right)^{2}$.",
+      h:"Osserva dove si trova il segno meno rispetto alla parentesi.",
+      s:"$\\left(-\\frac{3}{2}\\right)^{2}=\\frac{9}{4}$ perché l'esponente pari agisce anche sul segno; $-\\left(\\frac{3}{2}\\right)^{2}=-\\frac{9}{4}$ perché il meno resta fuori dalla potenza. Sono opposti."}
+   ]},
+   {id:"quiz",label:"Quiz",type:"quiz"}
+  ]
+},
+
+/* ================= ESPRESSIONI ================= */
+{
+  id:"espressioni", title:"Espressioni miste",
+  sub:[
+   {id:"teoria",label:"Teoria",type:"html",html:`
+<div class="card">
+<h2 style="margin-top:0">Ordine delle operazioni</h2>
+
+<h3>La gerarchia</h3>
+<p>Un'espressione non si legge da sinistra a destra come un testo: la scrittura è ambigua se non si fissa una precedenza. La convenzione universale è:</p>
+<ol>
+<li><strong>Parentesi</strong>, dalle più interne alle più esterne (tonde, quadre, graffe).</li>
+<li><strong>Potenze</strong>.</li>
+<li><strong>Moltiplicazioni e divisioni</strong>, nell'ordine in cui compaiono, da sinistra a destra.</li>
+<li><strong>Addizioni e sottrazioni</strong>, da sinistra a destra.</li>
+</ol>
+<p>Moltiplicazione e divisione hanno la <em>stessa</em> priorità: in $12\\div3\\cdot2$ si esegue prima la divisione, ottenendo 8 e non 2. Lo stesso vale per addizione e sottrazione.</p>
+
+<h3>Strategia di calcolo</h3>
+<ol>
+<li>Riscrivere ogni numero misto e ogni decimale come frazione.</li>
+<li>Trasformare le divisioni in moltiplicazioni per il reciproco: si lavora con una sola operazione moltiplicativa.</li>
+<li>Sviluppare le potenze, ricordando che l'esponente agisce su tutta la base racchiusa in parentesi.</li>
+<li>Risolvere l'interno delle parentesi, riducendo ogni volta il risultato ai minimi termini.</li>
+<li>Eseguire prodotti e quozienti, semplificando <em>prima</em> di moltiplicare.</li>
+<li>Eseguire somme e differenze con il minimo comune denominatore.</li>
+</ol>
+
+<h3>Esempio svolto</h3>
+<p>$\\left(\\frac{3}{4}-\\frac{1}{2}\\right)^{2}\\cdot\\frac{4}{3}+\\frac{1}{3}$</p>
+<ul>
+<li>parentesi: $\\frac{3}{4}-\\frac{1}{2}=\\frac{3}{4}-\\frac{2}{4}=\\frac{1}{4}$;</li>
+<li>potenza: $\\left(\\frac{1}{4}\\right)^{2}=\\frac{1}{16}$;</li>
+<li>prodotto: $\\frac{1}{16}\\cdot\\frac{4}{3}=\\frac{1}{12}$;</li>
+<li>somma: $\\frac{1}{12}+\\frac{1}{3}=\\frac{1}{12}+\\frac{4}{12}=\\frac{5}{12}$.</li>
+</ul>
+
+<h3>La linea di frazione come parentesi</h3>
+<p>In una frazione complessa la linea principale racchiude implicitamente numeratore e denominatore:</p>
+$$ \\dfrac{\\ \\frac{1}{2}+\\frac{1}{3}\\ }{\\ \\frac{5}{6}\\ }=\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}=\\frac{5}{6}\\div\\frac{5}{6}=1 $$
+<p>Va quindi trattata come se ci fossero parentesi sopra e sotto, anche quando non sono scritte.</p>
+
+<div class="box care">
+<span class="lab">Errori tipici</span>
+<ul style="margin:.3em 0 0">
+<li>Eseguire l'addizione prima della moltiplicazione: in $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$ il prodotto viene per primo, e il risultato è 1.</li>
+<li>Semplificare "in diagonale" fra termini che sono addendi e non fattori.</li>
+<li>Dimenticare che un segno meno davanti a una parentesi cambia il segno di <em>tutti</em> i termini interni: $-\\left(\\frac{1}{2}-\\frac{1}{3}\\right)=-\\frac{1}{2}+\\frac{1}{3}$.</li>
+<li>Applicare l'esponente a un solo termine della base.</li>
+</ul>
+</div>
+
+<h3>Controlli finali</h3>
+<p>Un risultato va sempre consegnato ridotto ai minimi termini e con il denominatore positivo. Una stima decimale rapida è un buon controllo: se ci si aspetta un valore vicino a 0,4 e si ottiene 4, l'errore è quasi certamente in un reciproco dimenticato o in una parentesi trascurata.</p>
+</div>`},
+   {id:"sim",label:"Simulazione",type:"sim",sim:"espressioni",
+    intro:"L'espressione è disegnata come albero: le foglie sono i dati, i nodi le operazioni. L'impulso risale dai rami già calcolati verso il nodo che si sta risolvendo, rendendo visibile l'ordine imposto da parentesi e precedenze."},
+   {id:"esercizi",label:"Esercizi",type:"ex",items:[
+     {t:"Calcola $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$.",
+      h:"La moltiplicazione ha priorità sull'addizione: nessuna parentesi la modifica.",
+      s:"$\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{1}{2}$, quindi $\\frac{1}{2}+\\frac{1}{2}=1$."},
+     {t:"Calcola $\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}$.",
+      h:"Prima la parentesi, con denominatore comune 6; poi moltiplica per il reciproco.",
+      s:"$\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$."},
+     {t:"Calcola $\\left(\\frac{2}{3}\\right)^{2}-\\frac{1}{9}$.",
+      h:"Sviluppa la potenza, poi riduci allo stesso denominatore.",
+      s:"$\\frac{4}{9}-\\frac{1}{9}=\\frac{3}{9}=\\frac{1}{3}$."},
+     {t:"Calcola $\\left[\\left(\\frac{3}{4}-\\frac{1}{2}\\right)\\cdot\\frac{4}{3}\\right]+\\frac{1}{3}$.",
+      h:"Parentesi tonda, poi quadra, poi la somma finale.",
+      s:"$\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$, quindi $\\frac{1}{3}+\\frac{1}{3}=\\frac{2}{3}$."},
+     {t:"Calcola $\\left(\\frac{1}{2}-\\frac{1}{3}\\right)^{-1}$.",
+      h:"Prima la parentesi; poi l'esponente $-1$ equivale al reciproco.",
+      s:"$\\frac{1}{2}-\\frac{1}{3}=\\frac{1}{6}$, e $\\left(\\frac{1}{6}\\right)^{-1}=6$."},
+     {t:"Calcola $\\dfrac{\\ \\frac{3}{4}-\\frac{1}{6}\\ }{\\ \\frac{7}{12}\\ }+\\left(\\frac{1}{2}\\right)^{3}$.",
+      h:"Tratta la linea principale come una parentesi: numeratore per intero diviso denominatore. Poi somma la potenza.",
+      s:"Numeratore: $\\frac{9}{12}-\\frac{2}{12}=\\frac{7}{12}$; quindi $\\frac{7}{12}\\div\\frac{7}{12}=1$. Infine $1+\\frac{1}{8}=\\frac{9}{8}$."}
+   ]},
+   {id:"quiz",label:"Quiz",type:"quiz"}
+  ]
+}
+];
+</script>
+<script>
+"use strict";
+/* ============================================================
+   7. QUIZ — 10 domande di teoria + 5 problemi per ogni area
+   Il campo c indica l'indice della risposta corretta come scritta qui;
+   l'ordine delle opzioni viene rimescolato a ogni tentativo.
+   ============================================================ */
+const QUIZ={
+semplificazione:[
+ {q:"Due frazioni $\\frac{a}{b}$ e $\\frac{c}{d}$ rappresentano lo stesso numero razionale se e solo se:",
+  o:["$ad=bc$","$a+d=b+c$","$a=c$ e $b=d$","$a-b=c-d$"],c:0,
+  w:"Il criterio di equivalenza è $ad=bc$. Due frazioni possono avere termini diversi e valere lo stesso: $\\frac{1}{2}$ e $\\frac{3}{6}$ sono equivalenti perché $1\\cdot6=2\\cdot3$."},
+ {q:"Moltiplicando numeratore e denominatore per uno stesso numero $k\\neq0$, il valore della frazione:",
+  o:["non cambia","raddoppia","viene moltiplicato per $k$","cambia solo se $k$ è negativo"],c:0,
+  w:"È la proprietà invariantiva: $\\frac{a}{b}=\\frac{ak}{bk}$. Cambia la scrittura, non il numero rappresentato. La condizione $k\\neq0$ serve perché $\\frac{0}{0}$ non è una frazione."},
+ {q:"Una frazione è ridotta ai minimi termini quando:",
+  o:["$\\mathrm{MCD}(|a|,|b|)=1$","il numeratore è minore del denominatore","il denominatore è un numero primo","$\\mathrm{mcm}(a,b)=ab$"],c:0,
+  w:"Irriducibile significa che numeratore e denominatore sono coprimi. Non c'entra la grandezza relativa: $\\frac{7}{4}$ è già ridotta pur avendo numeratore maggiore."},
+ {q:"Per ridurre una frazione ai minimi termini con un solo passaggio si divide numeratore e denominatore per:",
+  o:["il loro MCD","il loro mcm","il numeratore","il denominatore"],c:0,
+  w:"Dividendo per il massimo comune divisore si eliminano in un colpo solo tutti i fattori comuni. Il mcm serve invece a sommare, non a semplificare."},
+ {q:"La scrittura $\\frac{-3}{-4}$ è uguale a:",
+  o:["$\\frac{3}{4}$","$-\\frac{3}{4}$","$-\\frac{4}{3}$","non è una frazione"],c:0,
+  w:"Due segni negativi si elidono, quindi $\\frac{-3}{-4}=\\frac{3}{4}$. Per convenzione il denominatore si scrive positivo e l'eventuale segno si porta davanti alla linea."},
+ {q:"In $\\frac{2+3}{5+3}$ si può «cancellare» il 3?",
+  o:["No, perché è un addendo e non un fattore","Sì, dividendo entrambi per 3","Sì, ma solo al numeratore","Sì, perché compare sopra e sotto"],c:0,
+  w:"La proprietà invariantiva riguarda moltiplicazione e divisione, quindi i fattori. Qui va eseguita prima la somma: $\\frac{5}{8}$. Cancellando il 3 si otterrebbe $\\frac{2}{5}$, che è un numero diverso."},
+ {q:"Quante rappresentazioni ridotte con denominatore positivo ammette un numero razionale?",
+  o:["Esattamente una","Nessuna","Infinite","Due, opposte fra loro"],c:0,
+  w:"È il teorema di unicità della forma canonica. Le rappresentazioni non ridotte sono invece infinite: $\\frac{1}{2},\\frac{2}{4},\\frac{3}{6},\\dots$"},
+ {q:"Una frazione si dice apparente quando:",
+  o:["il numeratore è multiplo del denominatore","il numeratore è minore del denominatore","numeratore e denominatore sono coprimi","il denominatore vale 0"],c:0,
+  w:"Una frazione apparente è la scrittura frazionaria di un intero: $\\frac{12}{4}=3$. Se invece $|a|<|b|$ la frazione si dice propria."},
+ {q:"Se $a=0$ e $b\\neq0$, la forma canonica di $\\frac{a}{b}$ è:",
+  o:["$\\frac{0}{1}$","$\\frac{0}{b}$","$\\frac{1}{0}$","non esiste"],c:0,
+  w:"$\\frac{0}{b}=0$ per ogni $b\\neq0$, e la forma canonica ha denominatore 1. Attenzione a non confondere: $\\frac{1}{0}$ non è una frazione, perché il denominatore non può annullarsi."},
+ {q:"Semplificare una frazione:",
+  o:["cambia i termini ma non il numero rappresentato","cambia il numero rappresentato","è possibile solo con denominatore pari","richiede il calcolo del mcm"],c:0,
+  w:"Si passa semplicemente a un altro rappresentante della stessa classe di equivalenza. Il valore resta identico: è il senso stesso della proprietà invariantiva."},
+ {q:"Riduci ai minimi termini $\\frac{84}{126}$.",
+  o:["$\\frac{2}{3}$","$\\frac{3}{4}$","$\\frac{7}{9}$","$\\frac{6}{7}$"],c:0,type:"problema",
+  w:"$84=2^2\\cdot3\\cdot7$ e $126=2\\cdot3^2\\cdot7$, quindi $\\mathrm{MCD}=2\\cdot3\\cdot7=42$: $84:42=2$ e $126:42=3$, cioè $\\frac{2}{3}$."},
+ {q:"Quanto vale $\\mathrm{MCD}(72,120)$?",
+  o:["24","12","8","360"],c:0,type:"problema",
+  w:"$72=2^3\\cdot3^2$ e $120=2^3\\cdot3\\cdot5$: si prendono i fattori comuni con l'esponente minore, $2^3\\cdot3=24$. Il valore 360 è invece il mcm."},
+ {q:"Riduci ai minimi termini $\\frac{210}{462}$.",
+  o:["$\\frac{5}{11}$","$\\frac{10}{21}$","$\\frac{7}{15}$","$\\frac{5}{12}$"],c:0,type:"problema",
+  w:"$210=2\\cdot3\\cdot5\\cdot7$ e $462=2\\cdot3\\cdot7\\cdot11$: il MCD è $2\\cdot3\\cdot7=42$, e resta $\\frac{5}{11}$."},
+ {q:"Scrivi $\\frac{-18}{24}$ in forma canonica.",
+  o:["$-\\frac{3}{4}$","$\\frac{3}{4}$","$-\\frac{4}{3}$","$-\\frac{6}{8}$"],c:0,type:"problema",
+  w:"$\\mathrm{MCD}(18,24)=6$, quindi si ottiene $-\\frac{3}{4}$. La scrittura $-\\frac{6}{8}$ vale lo stesso numero ma non è ridotta ai minimi termini."},
+ {q:"Per quale intero $k$ vale $\\frac{k}{45}=\\frac{4}{9}$?",
+  o:["20","5","16","36"],c:0,type:"problema",
+  w:"Da $9k=45\\cdot4=180$ segue $k=20$. In alternativa: $45=9\\cdot5$, quindi anche il numeratore va moltiplicato per 5, cioè $4\\cdot5=20$."}
+],
+addizione:[
+ {q:"Con lo stesso denominatore, $\\frac{a}{c}+\\frac{b}{c}$ vale:",
+  o:["$\\frac{a+b}{c}$","$\\frac{a+b}{2c}$","$\\frac{a+b}{c+c}$","$\\frac{ab}{c}$"],c:0,
+  w:"Il denominatore dichiara in quante parti è diviso l'intero, e quella suddivisione non cambia: si contano soltanto le parti. Tre quinti più un quinto fanno quattro quinti, non quattro decimi."},
+ {q:"La definizione generale della somma è $\\frac{a}{b}+\\frac{c}{d}=$",
+  o:["$\\frac{ad+bc}{bd}$","$\\frac{a+c}{b+d}$","$\\frac{ab+cd}{bd}$","$\\frac{ad+bc}{b+d}$"],c:0,
+  w:"Si porta tutto sul denominatore comune $bd$: $\\frac{a}{b}=\\frac{ad}{bd}$ e $\\frac{c}{d}=\\frac{bc}{bd}$, e a quel punto i numeratori si sommano."},
+ {q:"Perché conviene usare il mcm dei denominatori invece del loro prodotto?",
+  o:["Porta allo stesso risultato ma con numeri più piccoli","Perché con il prodotto il risultato è errato","Perché solo il mcm rende l'operazione ben definita","Perché il prodotto non è mai un denominatore comune"],c:0,
+  w:"Il prodotto $bd$ è sempre un denominatore comune valido e conduce alla stessa classe di equivalenza. Il mcm è solo più economico: evita di dover semplificare numeri grandi alla fine."},
+ {q:"L'elemento neutro dell'addizione in $\\mathbb{Q}$ è:",
+  o:["$0$","$1$","$\\frac{1}{2}$","non esiste"],c:0,
+  w:"$\\frac{a}{b}+0=\\frac{a}{b}$. L'elemento neutro 1 è invece quello della moltiplicazione: sono ruoli diversi in operazioni diverse."},
+ {q:"L'opposto di $\\frac{a}{b}$ è:",
+  o:["$-\\frac{a}{b}$","$\\frac{b}{a}$","$0$","$\\frac{a}{b}$ stesso"],c:0,
+  w:"L'opposto è ciò che sommato dà 0, cioè $-\\frac{a}{b}$. Il reciproco $\\frac{b}{a}$ è invece ciò che moltiplicato dà 1: due concetti da non confondere."},
+ {q:"La sottrazione fra numeri razionali:",
+  o:["è la somma dell'opposto e non è commutativa","è commutativa come l'addizione","è associativa","è definita solo se il primo termine è maggiore"],c:0,
+  w:"Si definisce $x-y=x+(-y)$. In $\\mathbb{Q}$ il risultato esiste sempre, anche quando è negativo: è proprio ciò che distingue $\\mathbb{Q}$ dall'insieme dei soli numeri positivi."},
+ {q:"Sostituendo gli addendi con frazioni a essi equivalenti, la somma:",
+  o:["risulta equivalente a quella di partenza","risulta diversa","resta scritta identica","diventa irriducibile"],c:0,
+  w:"È la proprietà di buona definizione: l'operazione agisce sulle classi di equivalenza, quindi il risultato non dipende dal rappresentante scelto. La scrittura può cambiare, il numero no."},
+ {q:"Il numero misto $2\\frac{1}{3}$ equivale a:",
+  o:["$\\frac{7}{3}$","$\\frac{2}{3}$","$\\frac{6}{3}$","$\\frac{3}{7}$"],c:0,
+  w:"La scrittura significa $2+\\frac{1}{3}=\\frac{6}{3}+\\frac{1}{3}=\\frac{7}{3}$. Nel calcolo algebrico conviene convertirla subito, perché l'accostamento di due numeri di solito indica un prodotto."},
+ {q:"Sommando due frazioni positive, il risultato è:",
+  o:["maggiore di ciascuno dei due addendi","minore di entrambi","sempre minore di 1","sempre maggiore di 1"],c:0,
+  w:"Aggiungere una quantità positiva fa crescere il valore. È il comportamento opposto a quello del prodotto di due frazioni comprese fra 0 e 1, che risulta invece minore di entrambe."},
+ {q:"L'operazione «in orizzontale» $\\frac{a+c}{b+d}$ applicata a $\\frac{1}{2}$ e $\\frac{1}{3}$:",
+  o:["non è l'addizione: dà un valore compreso fra le due frazioni","coincide con l'addizione","è l'addizione solo se $b=d$","non è mai definita"],c:0,
+  w:"Dà $\\frac{2}{5}$, che sta fra $\\frac{1}{3}$ e $\\frac{1}{2}$, mentre la somma vale $\\frac{5}{6}$. È un'operazione con un suo significato (la mediante), ma non è l'addizione."},
+ {q:"Calcola $\\frac{2}{3}+\\frac{1}{4}$.",
+  o:["$\\frac{11}{12}$","$\\frac{3}{7}$","$\\frac{3}{12}$","$\\frac{11}{24}$"],c:0,type:"problema",
+  w:"$\\mathrm{mcm}(3,4)=12$: $\\frac{8}{12}+\\frac{3}{12}=\\frac{11}{12}$. La risposta $\\frac{3}{7}$ nasce dal sommare numeratori e denominatori separatamente, che non è l'addizione."},
+ {q:"Calcola $\\frac{5}{6}-\\frac{3}{8}$.",
+  o:["$\\frac{11}{24}$","$\\frac{1}{12}$","$\\frac{7}{24}$","$\\frac{11}{48}$"],c:0,type:"problema",
+  w:"$\\mathrm{mcm}(6,8)=24$: $\\frac{20}{24}-\\frac{9}{24}=\\frac{11}{24}$. Il valore $\\frac{11}{48}$ si ottiene usando come denominatore il prodotto $48$ ma dimenticando di adeguare i numeratori."},
+ {q:"Calcola $\\frac{3}{10}+\\frac{7}{15}$.",
+  o:["$\\frac{23}{30}$","$\\frac{10}{25}$","$\\frac{23}{60}$","$\\frac{21}{30}$"],c:0,type:"problema",
+  w:"$\\mathrm{mcm}(10,15)=30$: $\\frac{9}{30}+\\frac{14}{30}=\\frac{23}{30}$, già ridotta perché 23 è primo e non divide 30."},
+ {q:"Calcola $\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}$.",
+  o:["$1$","$\\frac{3}{11}$","$\\frac{5}{6}$","$\\frac{11}{6}$"],c:0,type:"problema",
+  w:"Con denominatore comune 6: $\\frac{3}{6}+\\frac{2}{6}+\\frac{1}{6}=\\frac{6}{6}=1$. Conviene ridurre tutte le frazioni allo stesso denominatore in un colpo solo, non a coppie."},
+ {q:"Determina $x$ tale che $\\frac{3}{10}+x=\\frac{4}{5}$.",
+  o:["$\\frac{1}{2}$","$\\frac{11}{10}$","$\\frac{1}{5}$","$\\frac{1}{10}$"],c:0,type:"problema",
+  w:"$x=\\frac{4}{5}-\\frac{3}{10}=\\frac{8}{10}-\\frac{3}{10}=\\frac{5}{10}=\\frac{1}{2}$. Il valore $\\frac{11}{10}$ si ottiene sommando invece di sottrarre."}
+],
+moltiplicazione:[
+ {q:"Il prodotto $\\frac{a}{b}\\cdot\\frac{c}{d}$ vale:",
+  o:["$\\frac{ac}{bd}$","$\\frac{a+c}{b+d}$","$\\frac{ad}{bc}$","$\\frac{ac}{b+d}$"],c:0,
+  w:"Si moltiplicano fra loro i numeratori e fra loro i denominatori. La forma $\\frac{ad}{bc}$ è invece il risultato della divisione."},
+ {q:"L'espressione «i due terzi dei tre quarti» si traduce con:",
+  o:["$\\frac{2}{3}\\cdot\\frac{3}{4}$","$\\frac{2}{3}+\\frac{3}{4}$","$\\frac{2}{3}\\div\\frac{3}{4}$","$\\frac{3}{4}-\\frac{2}{3}$"],c:0,
+  w:"La preposizione «di» traduce la moltiplicazione: si prende una frazione di una frazione. Il risultato è $\\frac{6}{12}=\\frac{1}{2}$."},
+ {q:"Il prodotto di due frazioni entrambe comprese fra 0 e 1 è:",
+  o:["minore di entrambe","maggiore di entrambe","compreso fra le due","sempre uguale a 1"],c:0,
+  w:"Moltiplicare per un numero minore di 1 rimpicciolisce: $\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$, minore sia di $\\frac{1}{2}$ sia di $\\frac{1}{3}$. Moltiplicare non significa necessariamente ingrandire."},
+ {q:"Il reciproco di $\\frac{a}{b}$, con $a\\neq0$, è:",
+  o:["$\\frac{b}{a}$","$-\\frac{a}{b}$","$\\frac{1}{ab}$","$\\frac{a}{b}$"],c:0,
+  w:"Il reciproco è ciò che moltiplicato dà 1: $\\frac{a}{b}\\cdot\\frac{b}{a}=\\frac{ab}{ab}=1$. L'esistenza del reciproco per ogni elemento non nullo è ciò che distingue $\\mathbb{Q}$ da $\\mathbb{Z}$."},
+ {q:"La semplificazione «incrociata» prima di moltiplicare è lecita perché:",
+  o:["il prodotto è un'unica frazione $\\frac{ac}{bd}$ e si semplificano i suoi fattori","è una convenzione pratica senza giustificazione","vale solo se i numeri sono primi","vale allo stesso modo anche nell'addizione"],c:0,
+  w:"Una volta scritto il prodotto come unica frazione, ogni fattore del numeratore può essere semplificato con ogni fattore del denominatore. Nell'addizione questo non accade: i numeratori restano addendi."},
+ {q:"Il prodotto di due frazioni è nullo:",
+  o:["se e solo se almeno un fattore è nullo","solo se entrambi i fattori sono nulli","se i denominatori sono uguali","mai"],c:0,
+  w:"È la legge di annullamento del prodotto, valida in $\\mathbb{Q}$. Se $\\frac{ac}{bd}=0$ allora $ac=0$, e quindi $a=0$ oppure $c=0$."},
+ {q:"La proprietà distributiva afferma che $\\frac{a}{b}\\left(\\frac{c}{d}+\\frac{e}{f}\\right)$ è uguale a:",
+  o:["$\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{a}{b}\\cdot\\frac{e}{f}$","$\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{e}{f}$","$\\left(\\frac{a}{b}+\\frac{c}{d}\\right)\\cdot\\frac{e}{f}$","$\\frac{a}{b}+\\frac{c}{d}\\cdot\\frac{e}{f}$"],c:0,
+  w:"Il fattore esterno moltiplica ciascun addendo della parentesi. È la proprietà che collega addizione e moltiplicazione e che si usa continuamente nel calcolo letterale."},
+ {q:"Moltiplicare una frazione per un intero $n$ significa:",
+  o:["moltiplicare per $n$ soltanto il numeratore","moltiplicare per $n$ numeratore e denominatore","moltiplicare per $n$ soltanto il denominatore","aggiungere $n$ al numeratore"],c:0,
+  w:"Poiché $n=\\frac{n}{1}$, si ha $n\\cdot\\frac{a}{b}=\\frac{na}{b}$. Moltiplicare entrambi i termini per $n$ lascerebbe invece la frazione invariata, per la proprietà invariantiva."},
+ {q:"Il prodotto di due frazioni entrambe negative è:",
+  o:["positivo","negativo","nullo","dipende dai denominatori"],c:0,
+  w:"Valgono le regole dei segni degli interi: segni concordi danno prodotto positivo, segni discordi prodotto negativo."},
+ {q:"Nel modello ad area, il denominatore del prodotto rappresenta:",
+  o:["il numero totale di celle della griglia","il numero di celle comuni","il numero di righe soltanto","l'area della regione comune"],c:0,
+  w:"La griglia ha $b\\cdot d$ celle uguali (il denominatore) e la regione comune ne contiene $a\\cdot c$ (il numeratore): da qui $\\frac{ac}{bd}$."},
+ {q:"Calcola $\\frac{3}{4}\\cdot\\frac{2}{9}$.",
+  o:["$\\frac{1}{6}$","$\\frac{3}{8}$","$\\frac{27}{8}$","$\\frac{5}{13}$"],c:0,type:"problema",
+  w:"Semplificando prima: 3 con 9 e 2 con 4, resta $\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$. Lo stesso risultato si ottiene da $\\frac{6}{36}$ riducendo alla fine."},
+ {q:"Calcola $\\frac{5}{8}\\cdot\\frac{12}{25}$.",
+  o:["$\\frac{3}{10}$","$\\frac{3}{5}$","$\\frac{17}{33}$","$\\frac{5}{24}$"],c:0,type:"problema",
+  w:"5 si semplifica con 25 (resta 5 al denominatore) e 12 con 8 (restano 3 e 2): $\\frac{1\\cdot3}{2\\cdot5}=\\frac{3}{10}$."},
+ {q:"Calcola $\\left(-\\frac{4}{7}\\right)\\cdot\\frac{21}{8}$.",
+  o:["$-\\frac{3}{2}$","$\\frac{3}{2}$","$-\\frac{2}{3}$","$-\\frac{7}{6}$"],c:0,type:"problema",
+  w:"$\\frac{4\\cdot21}{7\\cdot8}=\\frac{84}{56}=\\frac{3}{2}$, con segno negativo perché i fattori hanno segni discordi: $-\\frac{3}{2}$."},
+ {q:"Calcola i $\\frac{2}{3}$ di $\\frac{9}{10}$.",
+  o:["$\\frac{3}{5}$","$\\frac{20}{27}$","$\\frac{5}{3}$","$\\frac{11}{13}$"],c:0,type:"problema",
+  w:"$\\frac{2}{3}\\cdot\\frac{9}{10}=\\frac{18}{30}=\\frac{3}{5}$. Semplificando prima: 3 con 9 e 2 con 10, cioè $\\frac{1}{1}\\cdot\\frac{3}{5}$."},
+ {q:"Calcola $\\frac{7}{6}\\cdot\\frac{3}{14}$.",
+  o:["$\\frac{1}{4}$","$\\frac{1}{2}$","$\\frac{1}{8}$","$\\frac{49}{9}$"],c:0,type:"problema",
+  w:"7 si semplifica con 14 e 3 con 6: $\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$. Direttamente sarebbe $\\frac{21}{84}$, che si riduce allo stesso valore."}
+],
+divisione:[
+ {q:"Il quoziente $\\frac{a}{b}\\div\\frac{c}{d}$ è uguale a:",
+  o:["$\\frac{a}{b}\\cdot\\frac{d}{c}$","$\\frac{a}{b}\\cdot\\frac{c}{d}$","$\\frac{b}{a}\\cdot\\frac{c}{d}$","$\\frac{a+d}{b+c}$"],c:0,
+  w:"Si moltiplica il dividendo per il reciproco del divisore, ottenendo $\\frac{ad}{bc}$. Si ribalta il secondo termine, non il primo."},
+ {q:"Perché la divisione si esegue moltiplicando per il reciproco?",
+  o:["È una conseguenza dell'esistenza dell'inverso moltiplicativo","È una regola mnemonica senza dimostrazione","Perché i denominatori si sommano","Perché la divisione è commutativa"],c:0,
+  w:"Da $\\frac{c}{d}\\cdot x=\\frac{a}{b}$, moltiplicando entrambi i membri per $\\frac{d}{c}$ si ottiene $x=\\frac{a}{b}\\cdot\\frac{d}{c}$. La regola è un teorema, non una convenzione."},
+ {q:"La divisione $\\frac{a}{b}\\div\\frac{c}{d}$ è definita se e solo se:",
+  o:["$c\\neq0$","$a\\neq0$","$a>c$","$b=d$"],c:0,
+  w:"Serve che il divisore non sia nullo, cioè $c\\neq0$ (oltre a $b,d\\neq0$ perché siano frazioni). Lo zero è l'unico numero razionale privo di reciproco."},
+ {q:"Dividendo per una frazione compresa fra 0 e 1 si ottiene un risultato:",
+  o:["maggiore del dividendo","minore del dividendo","uguale al dividendo","sempre intero"],c:0,
+  w:"Una quantità piccola è contenuta molte volte in quella data: $\\frac{3}{4}\\div\\frac{1}{8}=6$. Dividere non significa necessariamente rimpicciolire."},
+ {q:"La divisione fra numeri razionali è:",
+  o:["né commutativa né associativa","commutativa ma non associativa","associativa ma non commutativa","commutativa e associativa"],c:0,
+  w:"Scambiando i termini si ottiene il reciproco del risultato; cambiando l'associazione si ottiene un valore diverso. Per questo, in assenza di parentesi, si procede da sinistra a destra."},
+ {q:"Scambiando fra loro dividendo e divisore si ottiene:",
+  o:["il reciproco del quoziente","lo stesso quoziente","l'opposto del quoziente","sempre 1"],c:0,
+  w:"Se $\\frac{a}{b}\\div\\frac{c}{d}=\\frac{ad}{bc}$, scambiandoli si ottiene $\\frac{bc}{ad}$, cioè il reciproco. L'opposto riguarda invece il segno."},
+ {q:"Una frazione complessa $\\dfrac{\\ \\frac{a}{b}\\ }{\\ \\frac{c}{d}\\ }$ indica:",
+  o:["la divisione $\\frac{a}{b}\\div\\frac{c}{d}$","il prodotto delle due frazioni","la somma delle due frazioni","una scrittura priva di significato"],c:0,
+  w:"La linea di frazione è, per definizione, un segno di divisione. La frazione complessa si risolve moltiplicando il numeratore per il reciproco del denominatore."},
+ {q:"In una frazione complessa, la linea di frazione principale ha valore di:",
+  o:["parentesi su numeratore e denominatore","moltiplicazione","uguaglianza","nessun operatore"],c:0,
+  w:"Tutto ciò che sta sopra e tutto ciò che sta sotto vanno calcolati separatamente, come se fossero racchiusi fra parentesi, e solo dopo si esegue la divisione."},
+ {q:"Dividere $\\frac{a}{b}$ per un intero $n\\neq0$ equivale a:",
+  o:["$\\frac{a}{bn}$","$\\frac{na}{b}$","$\\frac{a}{b+n}$","$\\frac{a-n}{b}$"],c:0,
+  w:"$\\frac{a}{b}\\div n=\\frac{a}{b}\\cdot\\frac{1}{n}=\\frac{a}{bn}$: dividendo si aumenta il denominatore, cioè si tagliano le parti più piccole."},
+ {q:"L'uguaglianza $\\frac{3}{4}\\div\\frac{1}{8}=6$ si legge:",
+  o:["$\\frac{1}{8}$ è contenuto 6 volte in $\\frac{3}{4}$","$\\frac{1}{8}$ di $\\frac{3}{4}$ vale 6","la somma di $\\frac{3}{4}$ e $\\frac{1}{8}$ vale 6","$\\frac{3}{4}$ diviso in 6 parti dà $\\frac{1}{8}$"],c:0,
+  w:"La divisione risponde alla domanda «quante volte il divisore sta nel dividendo»: in tre quarti stanno sei ottavi. È la lettura come misura."},
+ {q:"Calcola $\\frac{3}{4}\\div\\frac{2}{5}$.",
+  o:["$\\frac{15}{8}$","$\\frac{3}{10}$","$\\frac{8}{15}$","$\\frac{5}{6}$"],c:0,type:"problema",
+  w:"$\\frac{3}{4}\\cdot\\frac{5}{2}=\\frac{15}{8}$. Il risultato è maggiore del dividendo perché il divisore è minore di 1. Il valore $\\frac{3}{10}$ si ottiene moltiplicando invece di dividere."},
+ {q:"Calcola $\\frac{5}{6}\\div\\frac{10}{3}$.",
+  o:["$\\frac{1}{4}$","$\\frac{25}{9}$","$4$","$\\frac{5}{9}$"],c:0,type:"problema",
+  w:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: si semplifica 5 con 10 e 3 con 6, restando $\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
+ {q:"Semplifica $\\dfrac{\\ \\frac{3}{5}\\ }{\\ \\frac{9}{10}\\ }$.",
+  o:["$\\frac{2}{3}$","$\\frac{27}{50}$","$\\frac{3}{2}$","$\\frac{6}{45}$"],c:0,type:"problema",
+  w:"$\\frac{3}{5}\\cdot\\frac{10}{9}=\\frac{30}{45}=\\frac{2}{3}$. Il valore $\\frac{27}{50}$ nasce dal moltiplicare le due frazioni anziché dividere."},
+ {q:"Quante bottiglie da $\\frac{3}{8}$ di litro si riempiono con $\\frac{9}{4}$ di litro?",
+  o:["6","$\\frac{27}{32}$","$\\frac{3}{2}$","4"],c:0,type:"problema",
+  w:"$\\frac{9}{4}\\div\\frac{3}{8}=\\frac{9}{4}\\cdot\\frac{8}{3}=\\frac{72}{12}=6$ bottiglie esatte. È la lettura della divisione come misura."},
+ {q:"Risolvi $\\frac{2}{7}\\cdot x=\\frac{4}{21}$.",
+  o:["$x=\\frac{2}{3}$","$x=\\frac{3}{2}$","$x=\\frac{8}{147}$","$x=\\frac{1}{3}$"],c:0,type:"problema",
+  w:"$x=\\frac{4}{21}\\div\\frac{2}{7}=\\frac{4}{21}\\cdot\\frac{7}{2}=\\frac{28}{42}=\\frac{2}{3}$. Il valore $\\frac{8}{147}$ si ottiene moltiplicando invece di dividere."}
+],
+potenza:[
+ {q:"Per $n$ intero positivo, $\\left(\\frac{a}{b}\\right)^{n}$ vale:",
+  o:["$\\frac{a^{n}}{b^{n}}$","$\\frac{a^{n}}{b}$","$\\frac{an}{bn}$","$\\frac{a}{b^{n}}$"],c:0,
+  w:"La potenza è un prodotto ripetuto e, per la regola del prodotto, l'esponente agisce sia sul numeratore sia sul denominatore. Elevare solo il numeratore è l'errore più comune."},
+ {q:"Con $a\\neq0$, quanto vale $\\left(\\frac{a}{b}\\right)^{0}$?",
+  o:["$1$","$0$","$\\frac{a}{b}$","non è definito"],c:0,
+  w:"Vale 1. Non è una scelta arbitraria: perché resti valida $x^{m}:x^{n}=x^{m-n}$, ponendo $m=n$ si ottiene $x^{0}=x^{m}:x^{m}=1$."},
+ {q:"$\\left(\\frac{a}{b}\\right)^{-n}$ è uguale a:",
+  o:["$\\left(\\frac{b}{a}\\right)^{n}$","$-\\left(\\frac{a}{b}\\right)^{n}$","$-\\left(\\frac{b}{a}\\right)^{n}$","$\\left(\\frac{a}{b}\\right)^{n}$"],c:0,
+  w:"L'esponente negativo indica il reciproco della potenza: si ribalta la base e si cambia segno all'esponente. Il segno dell'esponente non influisce sul segno del risultato."},
+ {q:"La proprietà $x^{m}\\cdot x^{n}$ dà:",
+  o:["$x^{m+n}$","$x^{mn}$","$x^{m-n}$","$(2x)^{m+n}$"],c:0,
+  w:"Con la stessa base gli esponenti si sommano, perché si accostano i fattori: $x^2\\cdot x^3$ sono in tutto cinque fattori uguali."},
+ {q:"La potenza di potenza $\\left(x^{m}\\right)^{n}$ dà:",
+  o:["$x^{mn}$","$x^{m+n}$","$x^{m^{n}}$","$(mn)^{x}$"],c:0,
+  w:"Si moltiplicano gli esponenti: $\\left(x^{2}\\right)^{3}=x^{2}\\cdot x^{2}\\cdot x^{2}=x^{6}$. Da non confondere con il prodotto di potenze, dove si sommano."},
+ {q:"Il prodotto di potenze con lo stesso esponente $x^{n}\\cdot y^{n}$ vale:",
+  o:["$(xy)^{n}$","$(x+y)^{n}$","$(xy)^{2n}$","$x^{n}+y^{n}$"],c:0,
+  w:"Con lo stesso esponente si moltiplicano le basi. È utile per semplificare: $\\left(\\frac{2}{3}\\right)^{3}\\cdot\\left(\\frac{3}{5}\\right)^{3}=\\left(\\frac{2}{5}\\right)^{3}$."},
+ {q:"Il segno di una potenza con base negativa dipende:",
+  o:["dalla parità dell'esponente","dal segno dell'esponente","dal valore del denominatore","da nulla: è sempre positivo"],c:0,
+  w:"Esponente pari dà risultato positivo, dispari negativo: $\\left(-\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$ mentre $\\left(-\\frac{2}{3}\\right)^{3}=-\\frac{8}{27}$."},
+ {q:"$\\left(-\\frac{2}{3}\\right)^{2}$ e $-\\left(\\frac{2}{3}\\right)^{2}$:",
+  o:["sono opposti: $\\frac{4}{9}$ e $-\\frac{4}{9}$","sono uguali","sono entrambi negativi","il secondo non è definito"],c:0,
+  w:"Nel primo caso il segno è dentro la parentesi e viene elevato; nel secondo resta fuori e non viene toccato dall'esponente. La parentesi non è decorativa."},
+ {q:"Se $0<\\frac{a}{b}<1$, al crescere di $n$ le potenze $\\left(\\frac{a}{b}\\right)^{n}$:",
+  o:["decrescono avvicinandosi a 0","crescono illimitatamente","restano costanti","cambiano segno a ogni passo"],c:0,
+  w:"Ogni passo prende una frazione della quantità precedente, quindi il valore diminuisce: $\\frac{1}{2},\\frac{1}{4},\\frac{1}{8},\\dots$ Se invece la base è maggiore di 1 le potenze crescono."},
+ {q:"Per la somma di potenze $x^{m}+x^{n}$:",
+  o:["non esiste alcuna proprietà che la semplifichi come unica potenza","gli esponenti si sommano","gli esponenti si moltiplicano","si ottiene $x^{m+n}$"],c:0,
+  w:"Le proprietà delle potenze riguardano prodotti e quozienti, non somme. $2^{2}+2^{3}=4+8=12$, che non è una potenza di 2."},
+ {q:"Calcola $\\left(\\frac{2}{3}\\right)^{3}$.",
+  o:["$\\frac{8}{27}$","$\\frac{8}{9}$","$\\frac{2}{27}$","$\\frac{6}{9}$"],c:0,type:"problema",
+  w:"$\\frac{2^{3}}{3^{3}}=\\frac{8}{27}$. Le altre risposte derivano dall'elevare uno solo dei due termini, oppure dal moltiplicare per l'esponente."},
+ {q:"Calcola $\\left(\\frac{3}{5}\\right)^{-2}$.",
+  o:["$\\frac{25}{9}$","$\\frac{9}{25}$","$-\\frac{9}{25}$","$\\frac{6}{25}$"],c:0,type:"problema",
+  w:"Si ribalta la base: $\\left(\\frac{5}{3}\\right)^{2}=\\frac{25}{9}$. L'esponente negativo non rende negativo il risultato."},
+ {q:"Calcola $\\left(-\\frac{2}{3}\\right)^{3}$.",
+  o:["$-\\frac{8}{27}$","$\\frac{8}{27}$","$-\\frac{2}{27}$","$-\\frac{6}{9}$"],c:0,type:"problema",
+  w:"L'esponente è dispari, quindi il segno resta negativo: $-\\frac{2^{3}}{3^{3}}=-\\frac{8}{27}$."},
+ {q:"Calcola $\\left(\\frac{1}{2}\\right)^{4}\\cdot\\left(\\frac{1}{2}\\right)^{-6}$.",
+  o:["$4$","$\\frac{1}{4}$","$\\frac{1}{1024}$","$-4$"],c:0,type:"problema",
+  w:"Stessa base: gli esponenti si sommano, $4+(-6)=-2$, quindi $\\left(\\frac{1}{2}\\right)^{-2}=2^{2}=4$."},
+ {q:"Calcola $\\left(\\left(\\frac{2}{3}\\right)^{2}\\right)^{2}$.",
+  o:["$\\frac{16}{81}$","$\\frac{8}{27}$","$\\frac{4}{9}$","$\\frac{16}{9}$"],c:0,type:"problema",
+  w:"Gli esponenti si moltiplicano: $\\left(\\frac{2}{3}\\right)^{4}=\\frac{16}{81}$. Sommandoli si otterrebbe erroneamente l'esponente 4 solo per caso qui, ma la regola corretta è il prodotto $2\\cdot2$."},
+],
+espressioni:[
+ {q:"L'ordine corretto di esecuzione è:",
+  o:["parentesi, potenze, prodotti e quozienti, somme e differenze","potenze, parentesi, somme, prodotti","sempre da sinistra a destra","prima somme e differenze, poi il resto"],c:0,
+  w:"È la gerarchia convenzionale delle operazioni. All'interno dello stesso livello si procede da sinistra a destra."},
+ {q:"Quanto vale $12\\div3\\cdot2$?",
+  o:["8, perché a parità di priorità si procede da sinistra a destra","2, perché la moltiplicazione precede la divisione","18","l'espressione è ambigua"],c:0,
+  w:"Moltiplicazione e divisione hanno la stessa priorità: si esegue prima $12\\div3=4$, poi $4\\cdot2=8$."},
+ {q:"Moltiplicazione e divisione hanno:",
+  o:["la stessa priorità","priorità maggiore per la moltiplicazione","priorità maggiore per la divisione","priorità inferiore all'addizione"],c:0,
+  w:"Stesso livello, come accade fra addizione e sottrazione. L'ordine è quindi determinato dalla posizione, non dal tipo di operazione."},
+ {q:"Le parentesi si sciolgono:",
+  o:["dalle più interne alle più esterne","dalle più esterne alle più interne","in ordine indifferente","solo dopo aver sviluppato tutte le potenze"],c:0,
+  w:"Si parte dal nucleo più interno, perché il suo risultato serve al livello successivo. È lo stesso ordine mostrato dall'albero dell'espressione, che si calcola dal basso."},
+ {q:"Un segno meno davanti a una parentesi:",
+  o:["cambia il segno di tutti i termini interni","cambia il segno solo del primo termine","non ha effetto","si può ignorare se dentro c'è una somma"],c:0,
+  w:"$-\\left(\\frac{1}{2}-\\frac{1}{3}\\right)=-\\frac{1}{2}+\\frac{1}{3}$: equivale a moltiplicare per $-1$, quindi ogni termine cambia segno."},
+ {q:"In una frazione complessa, la linea di frazione principale:",
+  o:["ha valore di parentesi su numeratore e denominatore","si può ignorare","vale come parentesi solo per il numeratore","indica una moltiplicazione"],c:0,
+  w:"Numeratore e denominatore vanno calcolati per intero prima di eseguire la divisione, anche se le parentesi non sono scritte esplicitamente."},
+ {q:"Ogni divisione può sempre essere riscritta come:",
+  o:["prodotto per il reciproco","somma dell'opposto","potenza con esponente 2","differenza fra i termini"],c:0,
+  w:"Riscrivere tutte le divisioni come prodotti riduce l'espressione a una sola operazione moltiplicativa e rende possibile semplificare prima di calcolare."},
+ {q:"Conviene semplificare prima di eseguire i prodotti perché:",
+  o:["si lavora con numeri più piccoli e il risultato non cambia","altrimenti il risultato sarebbe sbagliato","è imposto dalla definizione di prodotto","altrimenti cambia il segno"],c:0,
+  w:"È solo una questione di economia di calcolo: il numero razionale ottenuto è lo stesso, ma si evitano moltiplicazioni fra numeri grandi da semplificare alla fine."},
+ {q:"In $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$ la prima operazione da eseguire è:",
+  o:["il prodotto $\\frac{2}{3}\\cdot\\frac{3}{4}$","la somma $\\frac{1}{2}+\\frac{2}{3}$","indifferente","la semplificazione di $\\frac{1}{2}$"],c:0,
+  w:"La moltiplicazione ha priorità sull'addizione e non ci sono parentesi che la modifichino. Il risultato è $\\frac{1}{2}+\\frac{1}{2}=1$."},
+ {q:"Un buon controllo finale di un'espressione è:",
+  o:["una stima decimale rapida del risultato","verificare che il risultato sia intero","controllare che il denominatore sia pari","assicurarsi che il numeratore sia primo"],c:0,
+  w:"Se ci si attende un valore vicino a 0,4 e si ottiene 4, l'errore è quasi sempre un reciproco dimenticato o una parentesi trascurata. Il risultato va poi consegnato ridotto ai minimi termini."},
+ {q:"Calcola $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$.",
+  o:["$1$","$\\frac{7}{8}$","$\\frac{5}{4}$","$\\frac{1}{2}$"],c:0,type:"problema",
+  w:"Prima il prodotto: $\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{1}{2}$; poi $\\frac{1}{2}+\\frac{1}{2}=1$. Il valore $\\frac{7}{8}$ si ottiene eseguendo per prima la somma, che qui non ha la priorità."},
+ {q:"Calcola $\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}$.",
+  o:["$1$","$\\frac{25}{36}$","$\\frac{5}{9}$","$\\frac{36}{25}$"],c:0,type:"problema",
+  w:"La parentesi vale $\\frac{5}{6}$, quindi $\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$. Il valore $\\frac{25}{36}$ si ottiene moltiplicando invece di dividere."},
+ {q:"Calcola $\\left(\\frac{2}{3}\\right)^{2}-\\frac{1}{9}$.",
+  o:["$\\frac{1}{3}$","$\\frac{5}{9}$","$\\frac{1}{9}$","$\\frac{4}{3}$"],c:0,type:"problema",
+  w:"$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$, quindi $\\frac{4}{9}-\\frac{1}{9}=\\frac{3}{9}=\\frac{1}{3}$. Ricorda di ridurre sempre il risultato finale."},
+ {q:"Calcola $\\left[\\left(\\frac{3}{4}-\\frac{1}{2}\\right)\\cdot\\frac{4}{3}\\right]+\\frac{1}{3}$.",
+  o:["$\\frac{2}{3}$","$\\frac{1}{3}$","$\\frac{5}{12}$","$\\frac{7}{12}$"],c:0,type:"problema",
+  w:"Tonda: $\\frac{3}{4}-\\frac{2}{4}=\\frac{1}{4}$; quadra: $\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$; somma finale: $\\frac{1}{3}+\\frac{1}{3}=\\frac{2}{3}$."},
+ {q:"Calcola $\\left(\\frac{1}{2}-\\frac{1}{3}\\right)^{-1}$.",
+  o:["$6$","$\\frac{1}{6}$","$-6$","$\\frac{5}{6}$"],c:0,type:"problema",
+  w:"Prima la parentesi: $\\frac{3}{6}-\\frac{2}{6}=\\frac{1}{6}$; poi l'esponente $-1$, che indica il reciproco: $6$. L'esponente negativo non cambia il segno del risultato."}
+]
+};
+
+/* ============================================================
+   8. INTERFACCIA — navigazione, esercizi, quiz
+   ============================================================ */
+const panel=document.getElementById("panel");
+const tabsEl=document.getElementById("tabs");
+const subEl=document.getElementById("subtabs");
+let CUR={a:0,s:0};
+const QSTATE={};
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}
+  return a;
+}
+function newQuizState(areaId){
+  const qs=QUIZ[areaId]||[];
+  QSTATE[areaId]={
+    idx:0, done:false,
+    perm:qs.map(q=>shuffle(q.o.map((_,i)=>i))),   /* posizione randomizzata a ogni tentativo */
+    ans:qs.map(()=>null)
+  };
+  return QSTATE[areaId];
+}
+
+function buildTabs(){
+  tabsEl.innerHTML="";
+  AREAS.forEach((ar,i)=>{
+    const b=document.createElement("button");
+    b.className="tab";b.type="button";b.textContent=ar.title;
+    b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",i===CUR.a?"true":"false");
+    b.addEventListener("click",()=>{ CUR={a:i,s:0}; render(true); });
+    tabsEl.appendChild(b);
+  });
+}
+function buildSub(){
+  const ar=AREAS[CUR.a];
+  subEl.innerHTML="";
+  ar.sub.forEach((s,i)=>{
+    const b=document.createElement("button");
+    b.className="subtab";b.type="button";b.textContent=s.label;
+    b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",i===CUR.s?"true":"false");
+    b.addEventListener("click",()=>{ CUR.s=i; render(true); });
+    subEl.appendChild(b);
+  });
+}
+
+function render(scroll){
+  stopSim();
+  buildTabs();buildSub();
+  const ar=AREAS[CUR.a], sc=ar.sub[CUR.s];
+  panel.innerHTML="";
+  if(sc.type==="html"){
+    const d=document.createElement("div");d.innerHTML=sc.html;panel.appendChild(d);
+  }else if(sc.type==="sim"){
+    const card=document.createElement("div");card.className="card";
+    card.innerHTML="<h2 style='margin-top:0'>Simulazione — "+ar.title.toLowerCase()+"</h2>"+
+      "<p class='lead' style='margin-bottom:1.1em'>"+sc.intro+"</p>";
+    panel.appendChild(card);
+    makeSim(card,SIMS[sc.sim]);
+  }else if(sc.type==="ex"){
+    const head=document.createElement("div");head.className="card";
+    head.innerHTML="<h2 style='margin-top:0'>Esercizi — "+ar.title.toLowerCase()+"</h2>"+
+      "<p style='margin-bottom:0'>Prova a risolvere ogni esercizio prima di aprire il suggerimento. "+
+      "Il suggerimento indica la strada, la soluzione mostra il procedimento completo.</p>";
+    panel.appendChild(head);
+    const box=document.createElement("div");box.className="card";
+    sc.items.forEach((it,i)=>{
+      const e=document.createElement("div");e.className="ex";
+      e.innerHTML=
+        "<span class='num'>Esercizio "+(i+1)+"</span>"+
+        "<div>"+it.t+"</div>"+
+        "<div class='btnrow'>"+
+          "<button class='btn' type='button' data-k='h'>Mostra suggerimento</button>"+
+          "<button class='btn' type='button' data-k='s'>Mostra soluzione</button>"+
+        "</div>"+
+        "<div class='reveal hint hidden'><span class='lab'>Suggerimento</span>"+it.h+"</div>"+
+        "<div class='reveal sol hidden'><span class='lab'>Soluzione</span>"+it.s+"</div>";
+      const hb=e.querySelector("[data-k='h']"), sb=e.querySelector("[data-k='s']");
+      const hd=e.querySelector(".hint"), sd=e.querySelector(".sol");
+      hb.addEventListener("click",()=>{
+        const open=!hd.classList.toggle("hidden");
+        hb.textContent=open?"Nascondi suggerimento":"Mostra suggerimento";
+      });
+      sb.addEventListener("click",()=>{
+        const open=!sd.classList.toggle("hidden");
+        sb.textContent=open?"Nascondi soluzione":"Mostra soluzione";
+      });
+      box.appendChild(e);
+    });
+    panel.appendChild(box);
+  }else if(sc.type==="quiz"){
+    renderQuiz();
+  }
+  typeset(panel);
+  if(scroll){
+    const y=document.querySelector("nav.main").offsetTop;
+    if(window.scrollY>y)window.scrollTo({top:y,behavior:"smooth"});
+  }
+}
+
+/* ---------- QUIZ ---------- */
+function renderQuiz(){
+  const ar=AREAS[CUR.a], qs=QUIZ[ar.id]||[];
+  const st=QSTATE[ar.id]||newQuizState(ar.id);
+  const card=document.createElement("div");card.className="card";
+  panel.appendChild(card);
+
+  if(st.done){ renderSummary(card,ar,qs,st); return; }
+
+  const n=qs.length, q=qs[st.idx], perm=st.perm[st.idx], given=st.ans[st.idx];
+  const answered=given!==null;
+  const nRisp=st.ans.filter(a=>a!==null).length;
+  const nOk=st.ans.filter((a,i)=>a!==null&&a===qs[i].c).length;
+
+  const bar=document.createElement("div");bar.className="quizbar";
+  bar.innerHTML="<span class='pill'>Domanda "+(st.idx+1)+" di "+n+"</span>"+
+    "<span class='pill'>Risposte date: "+nRisp+" di "+n+"</span>"+
+    "<span class='pill'>Corrette: "+nOk+"</span>";
+  card.appendChild(bar);
+
+  const dots=document.createElement("div");dots.className="dots";
+  qs.forEach((_,i)=>{
+    const d=document.createElement("button");
+    d.className="dot"+(i===st.idx?" cur":"")+
+      (st.ans[i]===null?"":(st.ans[i]===qs[i].c?" ok":" ko"));
+    d.type="button";d.textContent=String(i+1);
+    d.setAttribute("aria-label","Vai alla domanda "+(i+1));
+    d.addEventListener("click",()=>{st.idx=i;render(false);});
+    dots.appendChild(d);
+  });
+  card.appendChild(dots);
+
+  const qt=document.createElement("div");
+  qt.innerHTML="<span class='qtype'>"+(q.type==="problema"?"Problema numerico":"Domanda di teoria")+"</span>"+
+    "<div class='qtext'>"+q.q+"</div>";
+  card.appendChild(qt);
+
+  const opts=document.createElement("div");opts.className="qopts";
+  perm.forEach((origIdx,pos)=>{
+    const b=document.createElement("button");
+    b.className="qopt";b.type="button";
+    const letter=String.fromCharCode(65+pos);
+    b.innerHTML="<span class='mk'>"+letter+"</span><span>"+q.o[origIdx]+"</span>";
+    if(answered){
+      b.disabled=true;
+      if(origIdx===given)b.classList.add(given===q.c?"sel-ok":"sel-ko");
+      else if(origIdx===q.c)b.classList.add("show-ok");
+    }else{
+      b.addEventListener("click",()=>{ st.ans[st.idx]=origIdx; render(false); });
+    }
+    opts.appendChild(b);
+  });
+  card.appendChild(opts);
+
+  if(answered){
+    const ok=given===q.c;
+    const fb=document.createElement("div");
+    fb.className="fb "+(ok?"good":"oops");
+    const corretta=q.o[q.c];
+    fb.innerHTML="<span class='lab'>"+(ok?"Risposta corretta":"Non è questa la risposta")+"</span>"+
+      "<p>"+(ok
+        ? "Esatto. "+q.w
+        : "La risposta corretta è <strong>"+corretta+"</strong>. "+q.w+" Rileggi il passaggio con calma: è un punto in cui si sbaglia spesso, e riconoscerlo ora significa non ripeterlo.")+"</p>";
+    card.appendChild(fb);
+  }
+
+  const nav=document.createElement("div");nav.className="qnav";
+  const prev=document.createElement("button");
+  prev.className="btn";prev.type="button";prev.textContent="Domanda precedente";
+  prev.disabled=st.idx===0;
+  prev.addEventListener("click",()=>{st.idx--;render(false);});
+  const right=document.createElement("div");right.className="btnrow";right.style.margin="0";
+  if(st.idx<n-1){
+    const next=document.createElement("button");
+    next.className="btn primary";next.type="button";next.textContent="Domanda successiva";
+    next.addEventListener("click",()=>{st.idx++;render(false);});
+    right.appendChild(next);
+  }
+  const fin=document.createElement("button");
+  fin.className="btn"+(st.idx===n-1?" primary":"");fin.type="button";
+  fin.textContent="Vedi il riepilogo";
+  fin.addEventListener("click",()=>{st.done=true;render(false);});
+  right.appendChild(fin);
+  nav.appendChild(prev);nav.appendChild(right);
+  card.appendChild(nav);
+}
+
+function renderSummary(card,ar,qs,st){
+  const n=qs.length;
+  const nOk=st.ans.filter((a,i)=>a!==null&&a===qs[i].c).length;
+  const nRisp=st.ans.filter(a=>a!==null).length;
+  const pct=Math.round(nOk/n*100);
+  let msg;
+  if(nOk===n)msg="Tutte corrette. La padronanza dell'argomento è solida: puoi passare all'area successiva.";
+  else if(pct>=80)msg="Ottimo risultato. Rivedi soltanto le domande segnalate in ambra e la sezione sarà completamente acquisita.";
+  else if(pct>=60)msg="Buona base. Gli errori si concentrano su pochi passaggi: rileggi la teoria corrispondente e ripeti il quiz, le opzioni verranno rimescolate.";
+  else if(nRisp<n)msg="Hai lasciato alcune domande senza risposta. Torna indietro e completale: anche un tentativo sbagliato è informativo, perché la spiegazione compare subito.";
+  else msg="L'argomento richiede ancora un passaggio di studio. Riprendi la teoria e la simulazione, poi ripeti il quiz: nessun risultato è definitivo, e il secondo tentativo è quasi sempre molto migliore.";
+  card.innerHTML=
+    "<h2 style='margin-top:0'>Riepilogo — "+ar.title.toLowerCase()+"</h2>"+
+    "<div class='score'><div class='big'>"+nOk+" / "+n+"</div>"+
+    "<div style='color:var(--muted);font-size:.9rem'>risposte corrette ("+pct+"%)</div></div>"+
+    "<div class='bar'><i style='width:0%'></i></div>"+
+    "<p>"+msg+"</p>";
+  setTimeout(()=>{const i=card.querySelector(".bar > i");if(i)i.style.width=pct+"%";},60);
+
+  const list=document.createElement("div");
+  list.innerHTML="<h3>Dettaglio</h3>";
+  qs.forEach((q,i)=>{
+    const a=st.ans[i];
+    const ok=a!==null&&a===q.c;
+    const e=document.createElement("div");e.className="ex";
+    e.innerHTML="<span class='num'>"+(q.type==="problema"?"Problema":"Teoria")+" "+(i+1)+
+      " — "+(a===null?"senza risposta":(ok?"corretta":"da rivedere"))+"</span>"+
+      "<div>"+q.q+"</div>"+
+      "<div style='margin-top:.5em;color:var(--"+(ok?"ok":"warn")+")'><strong>Risposta corretta:</strong> "+q.o[q.c]+"</div>";
+    if(!ok){const p=document.createElement("div");p.style.marginTop=".4em";p.innerHTML=q.w;e.appendChild(p);}
+    list.appendChild(e);
+  });
+  card.appendChild(list);
+
+  const row=document.createElement("div");row.className="btnrow";
+  const again=document.createElement("button");
+  again.className="btn primary";again.type="button";
+  again.textContent="Ripeti il quiz";
+  again.addEventListener("click",()=>{newQuizState(ar.id);render(false);});
+  const back=document.createElement("button");
+  back.className="btn";back.type="button";back.textContent="Rivedi le domande";
+  back.addEventListener("click",()=>{st.done=false;st.idx=0;render(false);});
+  const theory=document.createElement("button");
+  theory.className="btn";theory.type="button";theory.textContent="Torna alla teoria";
+  theory.addEventListener("click",()=>{CUR.s=0;render(true);});
+  row.appendChild(again);row.appendChild(back);row.appendChild(theory);
+  card.appendChild(row);
+}
+
+/* ---------- avvio ---------- */
+function applyHash(){
+  const h=(location.hash||"").replace("#","").split("/");
+  if(!h[0])return false;
+  const ai=AREAS.findIndex(a=>a.id===h[0]);
+  if(ai<0)return false;
+  const si=AREAS[ai].sub.findIndex(s=>s.id===h[1]);
+  const ns=si>=0?si:0;
+  if(ai===CUR.a&&ns===CUR.s)return false;
+  CUR.a=ai;CUR.s=ns;
+  return true;
+}
+function boot(){
+  readTheme();
+  applyHash();
+  render(false);
+  window.addEventListener("hashchange",()=>{ if(applyHash())render(false); });
+}
+const _render=render;
+render=function(scroll){
+  _render(scroll);
+  try{history.replaceState(null,"","#"+AREAS[CUR.a].id+"/"+AREAS[CUR.a].sub[CUR.s].id);}catch(e){}
+};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);
+else boot();
+window.addEventListener("load",()=>{ typeset(panel); });
+</script>
+</body>
+</html>
