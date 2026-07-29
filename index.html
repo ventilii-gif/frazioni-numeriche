@@ -225,6 +225,9 @@ select{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line-
 .reveal.sol{border-color:var(--accent);background:var(--accent-soft);border-style:solid}
 .reveal .lab{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.68rem;letter-spacing:.12em;
   text-transform:uppercase;font-weight:700;color:var(--muted);display:block;margin-bottom:.3em}
+.reveal.hint .lab{color:var(--fb)}
+.hintmeta{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.76rem;color:var(--muted);margin:.2em 0 .1em}
+.reveal.hint + .reveal.hint{margin-top:8px}
 .hidden{display:none}
 
 /* ---------- QUIZ ---------- */
@@ -387,15 +390,19 @@ function fallbackMath(root){
   const jobs=[];let n;
   while((n=walk.nextNode())){ if(n.nodeValue.indexOf("$")>=0)jobs.push(n); }
   const par=x=>/^[-]?[\w.]+$/.test(x.trim())?x.trim():"("+x.trim()+")";
-  const clean=s=>s
-    .replace(/\\d?frac\{([^{}]*)\}\{([^{}]*)\}/g,(_,n,d)=>par(n)+"/"+par(d))
-    .replace(/\\left|\\right|\\!|\\,|\\;/g,"")
+  const clean=s=>{
+    s=s.replace(/\\left|\\right|\\!|\\,|\\;|\\ /g,"");   /* prima gli spazi, poi le frazioni */
+    for(let i=0;i<6&&/\\[dt]?frac\{/.test(s);i++){
+      s=s.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g,(_,n,d)=>par(n)+"/"+par(d));
+    }
+    return s
     .replace(/\\cdot/g,"·").replace(/\\times/g,"×").replace(/\\div/g,":")
     .replace(/\\neq/g,"≠").replace(/\\leq/g,"≤").replace(/\\geq/g,"≥")
     .replace(/\\Longleftrightarrow|\\iff/g,"⇔").replace(/\\Rightarrow/g,"⇒")
     .replace(/\\in/g,"∈").replace(/\\mathbb\{([A-Z])\}/g,"$1")
     .replace(/\\text\{([^{}]*)\}/g,"$1")
     .replace(/[{}]/g,"").replace(/\\[a-zA-Z]+/g,"");
+  };
   jobs.forEach(node=>{
     const parts=node.nodeValue.split(/(\$\$[^$]*\$\$|\$[^$]*\$)/g);
     if(parts.length<2)return;
@@ -1433,22 +1440,30 @@ $$ \\frac{84}{126}=\\frac{2^2\\cdot 3\\cdot 7}{2\\cdot 3^2\\cdot 7}=\\frac{2}{3}
     intro:"Muovi numeratore e denominatore: il ciclo mostra le celle della frazione di partenza che si fondono in gruppi di ampiezza pari al MCD, fino alla frazione ridotta. La linea tratteggiata verifica che la porzione di intero non cambia."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Riduci ai minimi termini: $\\frac{72}{120}$.",
-      h:"Scomponi: $72=2^3\\cdot3^2$ e $120=2^3\\cdot3\\cdot5$. Il MCD è il prodotto dei fattori comuni con l'esponente minore.",
+      hs:["Per ridurre serve il MCD di numeratore e denominatore: conviene scomporli in fattori primi.",
+          "$72=2^3\\cdot3^2$ e $120=2^3\\cdot3\\cdot5$: il MCD è il prodotto dei fattori comuni presi con l'esponente minore.",
+          "$\\mathrm{MCD}=2^3\\cdot3=24$: dividi sopra e sotto per 24."],
       s:"$\\mathrm{MCD}(72,120)=2^3\\cdot3=24$, quindi $\\frac{72}{120}=\\frac{72:24}{120:24}=\\frac{3}{5}$."},
      {t:"Stabilisci se $\\frac{18}{42}$ e $\\frac{21}{49}$ sono equivalenti.",
-      h:"Puoi usare il criterio $ad=bc$ oppure ridurre entrambe alla forma canonica e confrontarle.",
+      hs:["Due frazioni sono equivalenti quando vale il criterio $ad=bc$ (prodotto in croce).",
+          "Calcola $18\\cdot 49$ e $42\\cdot 21$ e confrontali; in alternativa riduci entrambe alla forma canonica."],
       s:"$18\\cdot49=882$ e $42\\cdot21=882$: sono uguali, quindi le frazioni sono equivalenti. In effetti entrambe si riducono a $\\frac{3}{7}$."},
      {t:"Determina l'intero $k$ tale che $\\frac{k}{45}=\\frac{4}{9}$.",
-      h:"Da $\\frac{k}{45}=\\frac{4}{9}$ segue $9k=45\\cdot4$; in alternativa osserva per quale numero è stato moltiplicato il denominatore.",
+      hs:["Applica il criterio di equivalenza: da $\\frac{k}{45}=\\frac{4}{9}$ segue $9k=45\\cdot 4$.",
+          "In alternativa, osserva per quale numero è stato moltiplicato il denominatore: $45=9\\cdot 5$.",
+          "Allora anche il numeratore va moltiplicato per lo stesso numero."],
       s:"$9k=180$, quindi $k=20$. Infatti $45=9\\cdot5$ e allora $k=4\\cdot5=20$: $\\frac{20}{45}=\\frac{4}{9}$."},
      {t:"Scrivi $\\frac{-24}{-60}$ in forma canonica.",
-      h:"Prima sistema i segni: due segni negativi danno una frazione positiva. Poi riduci.",
+      hs:["Prima sistema i segni: due segni negativi al numeratore e al denominatore si elidono.",
+          "Resta $\\frac{24}{60}$: ora riducila con il suo MCD."],
       s:"$\\frac{-24}{-60}=\\frac{24}{60}$ e $\\mathrm{MCD}(24,60)=12$, quindi la forma canonica è $\\frac{2}{5}$."},
      {t:"Spiega perché $\\frac{5+10}{10}$ non vale $\\frac{5}{1}$, e calcola il valore corretto.",
-      h:"Al numeratore il 10 è un addendo, non un fattore: la proprietà invariantiva non si applica agli addendi.",
+      hs:["La proprietà invariantiva permette di elidere solo fattori, mai addendi.",
+          "Al numeratore il 10 è un addendo di una somma, non un fattore: non puoi cancellarlo. Esegui prima la somma."],
       s:"Si deve prima eseguire la somma: $\\frac{5+10}{10}=\\frac{15}{10}=\\frac{3}{2}$. La semplificazione è lecita solo dopo aver ottenuto un unico fattore al numeratore."},
      {t:"Trova tutte le frazioni con denominatore minore di 20 equivalenti a $\\frac{3}{4}$.",
-      h:"Sono tutte della forma $\\frac{3k}{4k}$ con $k$ intero positivo: basta imporre $4k<20$.",
+      hs:["Ogni frazione equivalente a $\\frac{3}{4}$ ha la forma $\\frac{3k}{4k}$ con $k$ intero positivo.",
+          "Imponi la condizione sul denominatore: $4k<20$, cioè $k<5$."],
       s:"$4k<20$ dà $k\\in\\{1,2,3,4\\}$, quindi $\\frac{3}{4},\\frac{6}{8},\\frac{9}{12},\\frac{12}{16}$."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
@@ -1511,22 +1526,31 @@ $$ \\frac{a}{b}+\\left(-\\frac{a}{b}\\right)=0 $$
     intro:"La frazione A è in ciano, la B in ambra: due colori distinti per seguirle separatamente prima che si sovrappongano sulla barra risultato. Il ciclo attraversa le fasi del procedimento: denominatori diversi, riduzione al mcm, unione (o sottrazione) delle parti."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\frac{2}{3}+\\frac{1}{4}$.",
-      h:"$\\mathrm{mcm}(3,4)=12$. Scrivi un'unica frazione di denominatore 12 e al numeratore la somma indicata: $2\\cdot(12:3)+1\\cdot(12:4)$.",
+      hs:["Denominatori diversi: trova il nuovo denominatore, cioè $\\mathrm{mcm}(3,4)$.",
+          "$m=12$. Scrivi un'unica frazione di denominatore 12; al numeratore la somma indicata $2\\cdot(12:3)+1\\cdot(12:4)$.",
+          "Cioè $\\frac{2\\cdot 4+1\\cdot 3}{12}$: ora svolgi i prodotti e la somma."],
       s:"$\\frac{2}{3}+\\frac{1}{4}=\\frac{2\\cdot 4+1\\cdot 3}{12}=\\frac{8+3}{12}=\\frac{11}{12}$, già ridotta."},
      {t:"Calcola $\\frac{7}{12}-\\frac{5}{18}$.",
-      h:"$12=2^2\\cdot3$ e $18=2\\cdot3^2$, quindi $m=\\mathrm{mcm}(12,18)=2^2\\cdot3^2=36$; poi $36:12=3$ e $36:18=2$.",
+      hs:["Trova il nuovo denominatore scomponendo: $12=2^2\\cdot3$ e $18=2\\cdot3^2$.",
+          "$m=\\mathrm{mcm}(12,18)=2^2\\cdot3^2=36$, con $36:12=3$ e $36:18=2$.",
+          "Frazione unica: $\\frac{7\\cdot 3-5\\cdot 2}{36}$, poi svolgi."],
       s:"$\\frac{7}{12}-\\frac{5}{18}=\\frac{7\\cdot 3-5\\cdot 2}{36}=\\frac{21-10}{36}=\\frac{11}{36}$, già ridotta."},
      {t:"Calcola $\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}$.",
-      h:"Un unico denominatore per tutte e tre: $m=\\mathrm{mcm}(2,3,6)=6$. Al numeratore la somma indicata dei tre prodotti, ciascuno con $m$ diviso il rispettivo denominatore.",
+      hs:["Un unico denominatore per tutte e tre: $m=\\mathrm{mcm}(2,3,6)=6$.",
+          "Un'unica frazione con al numeratore i tre prodotti, ciascuno con $m$ diviso il rispettivo denominatore: $\\frac{1\\cdot 3+1\\cdot 2+1\\cdot 1}{6}$."],
       s:"$\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}=\\frac{1\\cdot 3+1\\cdot 2+1\\cdot 1}{6}=\\frac{3+2+1}{6}=\\frac{6}{6}=1$."},
      {t:"Determina $x$ tale che $\\frac{3}{10}+x=\\frac{4}{5}$.",
-      h:"Isola $x=\\frac{4}{5}-\\frac{3}{10}$; poi $m=\\mathrm{mcm}(5,10)=10$, con $10:5=2$ e $10:10=1$.",
+      hs:["Isola l'incognita: $x=\\frac{4}{5}-\\frac{3}{10}$.",
+          "Nuovo denominatore $m=\\mathrm{mcm}(5,10)=10$, con $10:5=2$ e $10:10=1$: $\\frac{4\\cdot 2-3\\cdot 1}{10}$."],
       s:"$x=\\frac{4}{5}-\\frac{3}{10}=\\frac{4\\cdot 2-3\\cdot 1}{10}=\\frac{8-3}{10}=\\frac{5}{10}=\\frac{1}{2}$."},
      {t:"Un serbatoio è pieno per $\\frac{3}{8}$; se ne aggiunge una quantità pari a $\\frac{5}{12}$ della capacità. Quanto resta da riempire?",
-      h:"Somma le due parti con $m=\\mathrm{mcm}(8,12)=24$ ($24:8=3$, $24:12=2$), poi sottrai il totale da $1=\\frac{24}{24}$.",
+      hs:["Prima trova la parte già presente: somma $\\frac{3}{8}+\\frac{5}{12}$.",
+          "Nuovo denominatore $m=\\mathrm{mcm}(8,12)=24$ ($24:8=3$, $24:12=2$): $\\frac{3\\cdot 3+5\\cdot 2}{24}$.",
+          "Ottenuto il totale presente, ciò che resta è $1-\\text{(totale)}$, con $1=\\frac{24}{24}$."],
       s:"Presente: $\\frac{3}{8}+\\frac{5}{12}=\\frac{3\\cdot 3+5\\cdot 2}{24}=\\frac{9+10}{24}=\\frac{19}{24}$; resta $1-\\frac{19}{24}=\\frac{5}{24}$ della capacità."},
      {t:"Verifica che $\\frac{a}{b}+\\frac{c}{d}$ dà lo stesso risultato usando $\\frac{2}{6}$ oppure $\\frac{1}{3}$ come primo addendo, con $\\frac{1}{4}$ come secondo.",
-      h:"Calcola le due somme con il metodo a frazione unica e riduci entrambi i risultati alla forma canonica.",
+      hs:["$\\frac{2}{6}$ e $\\frac{1}{3}$ sono la stessa frazione: se l'addizione è ben definita, devono dare lo stesso risultato.",
+          "Calcola le due somme con il metodo a frazione unica e riduci entrambi i risultati: dovrebbero coincidere."],
       s:"$\\frac{2}{6}+\\frac{1}{4}=\\frac{2\\cdot 2+1\\cdot 3}{12}=\\frac{4+3}{12}=\\frac{7}{12}$ e $\\frac{1}{3}+\\frac{1}{4}=\\frac{1\\cdot 4+1\\cdot 3}{12}=\\frac{4+3}{12}=\\frac{7}{12}$: l'operazione è ben definita sulle classi di equivalenza, come deve essere."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
@@ -1577,22 +1601,28 @@ $$ \\frac{5}{8}\\cdot\\frac{12}{25}=\\frac{\\cancel{5}^{\\,1}}{\\cancel{8}^{\\,2
     intro:"Il quadrato ha area 1. Le colonne ciano rappresentano la prima frazione, le righe ambra la seconda: il prodotto è la regione comune, tratteggiata in movimento. Conta le celle e confronta con la formula."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\frac{3}{4}\\cdot\\frac{2}{9}$.",
-      h:"Prima di moltiplicare, semplifica a croce: 3 con 9 e 2 con 4.",
+      hs:["Nel prodotto puoi semplificare a croce prima di moltiplicare: cerca fattori comuni fra un numeratore e il denominatore dell'altra frazione.",
+          "Semplifica a croce: 3 con 9 (resta 1 e 3) e 2 con 4 (resta 1 e 2)."],
       s:"$\\frac{3}{4}\\cdot\\frac{2}{9}=\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$."},
      {t:"Calcola $\\frac{5}{8}\\cdot\\frac{12}{25}$.",
-      h:"Semplificazione a croce: il 5 con il 25 e il 12 con l'8 (fattore comune 4).",
+      hs:["Cerca i fattori comuni in diagonale (semplificazione a croce).",
+          "5 con 25 (resta 5 al denominatore) e 12 con 8 (fattore comune 4: restano 3 e 2)."],
       s:"$\\frac{1}{2}\\cdot\\frac{3}{5}=\\frac{3}{10}$."},
      {t:"Calcola i $\\frac{3}{5}$ di $\\frac{10}{21}$.",
-      h:"«di» indica il prodotto: imposta $\\frac{3}{5}\\cdot\\frac{10}{21}$.",
+      hs:["La preposizione «di» indica una moltiplicazione: imposta $\\frac{3}{5}\\cdot\\frac{10}{21}$.",
+          "Semplifica a croce: 3 con 21 e 10 con 5."],
       s:"$\\frac{3}{5}\\cdot\\frac{10}{21}=\\frac{1}{1}\\cdot\\frac{2}{7}=\\frac{2}{7}$."},
      {t:"Determina il reciproco di $-\\frac{7}{3}$ e verifica il prodotto.",
-      h:"Il reciproco si ottiene scambiando numeratore e denominatore; il segno resta negativo.",
+      hs:["Il reciproco si ottiene scambiando numeratore e denominatore.",
+          "Il segno resta negativo; per verificare, moltiplica la frazione per il suo reciproco: deve dare 1."],
       s:"Il reciproco è $-\\frac{3}{7}$, e infatti $\\left(-\\frac{7}{3}\\right)\\cdot\\left(-\\frac{3}{7}\\right)=\\frac{21}{21}=1$."},
      {t:"Applica la proprietà distributiva a $\\frac{2}{3}\\left(\\frac{3}{4}+\\frac{9}{8}\\right)$ e confronta con il calcolo diretto.",
-      h:"Distribuita: $\\frac{2}{3}\\cdot\\frac{3}{4}+\\frac{2}{3}\\cdot\\frac{9}{8}$. Diretta: prima la somma in parentesi.",
+      hs:["Via distributiva: moltiplica $\\frac{2}{3}$ per ciascun addendo della parentesi.",
+          "$\\frac{2}{3}\\cdot\\frac{3}{4}+\\frac{2}{3}\\cdot\\frac{9}{8}$; via diretta invece calcola prima la somma in parentesi e poi moltiplica. I due risultati devono coincidere."],
       s:"Distribuita: $\\frac{1}{2}+\\frac{3}{4}=\\frac{5}{4}$. Diretta: $\\frac{3}{4}+\\frac{9}{8}=\\frac{15}{8}$, poi $\\frac{2}{3}\\cdot\\frac{15}{8}=\\frac{5}{4}$. I due percorsi coincidono."},
      {t:"Una tavola lunga $\\frac{9}{5}$ di metro viene ridotta ai $\\frac{5}{6}$ della sua lunghezza. Quanto misura?",
-      h:"Ridurre ai $\\frac{5}{6}$ significa moltiplicare per $\\frac{5}{6}$.",
+      hs:["«Ridurre ai $\\frac{5}{6}$» significa prendere i $\\frac{5}{6}$ di quella lunghezza: una moltiplicazione.",
+          "Imposta $\\frac{9}{5}\\cdot\\frac{5}{6}$ e semplifica a croce il 5 con il 5."],
       s:"$\\frac{9}{5}\\cdot\\frac{5}{6}=\\frac{9}{6}=\\frac{3}{2}$ di metro, cioè 1,5 m."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
@@ -1646,22 +1676,29 @@ $$ \\dfrac{\\ \\frac{3}{5}\\ }{\\ \\frac{9}{10}\\ }=\\frac{3}{5}\\div\\frac{9}{1
     intro:"Il segmento ciano è il dividendo; le unità ambra, lunghe quanto il divisore, avanzano una alla volta e contano quante volte esso vi è contenuto. L'ultima unità, se tratteggiata, è parziale: corrisponde alla parte frazionaria del quoziente."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\frac{3}{4}\\div\\frac{2}{5}$.",
-      h:"Trasforma in prodotto per il reciproco del divisore: $\\frac{3}{4}\\cdot\\frac{5}{2}$.",
+      hs:["Dividere equivale a moltiplicare per il reciproco del divisore.",
+          "Il reciproco di $\\frac{2}{5}$ è $\\frac{5}{2}$: calcola $\\frac{3}{4}\\cdot\\frac{5}{2}$ (qui non ci sono semplificazioni a croce)."],
       s:"$\\frac{3}{4}\\cdot\\frac{5}{2}=\\frac{15}{8}$. Il risultato è maggiore del dividendo perché il divisore è minore di 1."},
      {t:"Calcola $\\frac{5}{6}\\div\\frac{10}{3}$.",
-      h:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: dopo il reciproco semplifica a croce, 5 con 10 e 3 con 6, prima di moltiplicare.",
+      hs:["Trasforma in prodotto per il reciproco: $\\frac{5}{6}\\cdot\\frac{3}{10}$.",
+          "Ora semplifica a croce: 5 con 10 e 3 con 6, prima di moltiplicare."],
       s:"$\\frac{5}{6}\\cdot\\frac{3}{10}=\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
      {t:"Semplifica la frazione complessa $\\dfrac{\\ \\frac{7}{9}\\ }{\\ \\frac{14}{3}\\ }$.",
-      h:"La linea principale è una divisione: $\\frac{7}{9}\\div\\frac{14}{3}$.",
+      hs:["La linea di frazione principale è un segno di divisione: $\\frac{7}{9}\\div\\frac{14}{3}$.",
+          "Moltiplica per il reciproco $\\frac{3}{14}$ e semplifica a croce (7 con 14, 3 con 9)."],
       s:"$\\frac{7}{9}\\cdot\\frac{3}{14}=\\frac{1}{3}\\cdot\\frac{1}{2}=\\frac{1}{6}$."},
      {t:"Quante bottiglie da $\\frac{3}{8}$ di litro si riempiono con $\\frac{9}{4}$ di litro?",
-      h:"È una divisione di misura: $\\frac{9}{4}\\div\\frac{3}{8}$.",
+      hs:["«Quante volte la capacità di una bottiglia sta nel totale» è una divisione: $\\frac{9}{4}\\div\\frac{3}{8}$.",
+          "Moltiplica per il reciproco $\\frac{8}{3}$ e semplifica."],
       s:"$\\frac{9}{4}\\cdot\\frac{8}{3}=\\frac{72}{12}=6$ bottiglie esatte."},
      {t:"Risolvi $\\frac{2}{7}\\cdot x=\\frac{4}{21}$.",
-      h:"Isola $x$ dividendo entrambi i membri per $\\frac{2}{7}$, cioè moltiplicando per $\\frac{7}{2}$.",
+      hs:["Per isolare $x$ dividi entrambi i membri per $\\frac{2}{7}$.",
+          "Dividere per $\\frac{2}{7}$ significa moltiplicare per il reciproco $\\frac{7}{2}$: $x=\\frac{4}{21}\\cdot\\frac{7}{2}$."],
       s:"$x=\\frac{4}{21}\\cdot\\frac{7}{2}=\\frac{28}{42}=\\frac{2}{3}$."},
      {t:"Spiega perché $\\frac{5}{6}\\div\\frac{5}{6}\\div\\frac{5}{6}$ richiede una convenzione, e calcola il valore.",
-      h:"Senza parentesi si procede da sinistra a destra: prima le prime due, poi il risultato diviso la terza.",
+      hs:["La divisione non è associativa: cambiando le parentesi il risultato cambia.",
+          "In assenza di parentesi la convenzione è procedere da sinistra a destra: calcola prima $\\frac{5}{6}\\div\\frac{5}{6}$.",
+          "Quella prima divisione vale 1; ora dividi 1 per l'ultima $\\frac{5}{6}$."],
       s:"$\\left(\\frac{5}{6}\\div\\frac{5}{6}\\right)\\div\\frac{5}{6}=1\\div\\frac{5}{6}=\\frac{6}{5}$, mentre $\\frac{5}{6}\\div\\left(\\frac{5}{6}\\div\\frac{5}{6}\\right)=\\frac{5}{6}$. La divisione non è associativa, quindi l'ordine va stabilito: da sinistra a destra il risultato è $\\frac{6}{5}$."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
@@ -1722,22 +1759,29 @@ $$ \\left(-\\frac{2}{3}\\right)^{2}=\\frac{4}{9}, \\qquad \\left(-\\frac{2}{3}\\
     intro:"A ogni passo si prende la stessa frazione della figura precedente: dopo n passi l'area vale la potenza n-esima. Con esponente negativo la costruzione riparte dalla base ribaltata. Sulla retta a destra si vede se la successione tende a zero o cresce."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\left(\\frac{2}{3}\\right)^{3}$.",
-      h:"L'esponente si applica a numeratore e denominatore separatamente.",
+      hs:["L'esponente si applica sia al numeratore sia al denominatore, separatamente.",
+          "Cioè $\\frac{2^{3}}{3^{3}}$: ora calcola le due potenze."],
       s:"$\\frac{2^{3}}{3^{3}}=\\frac{8}{27}$."},
      {t:"Calcola $\\left(\\frac{3}{5}\\right)^{-2}$.",
-      h:"Esponente negativo: ribalta la base e cambia il segno all'esponente.",
+      hs:["Esponente negativo: ribalta la base e cambia il segno all'esponente.",
+          "Diventa $\\left(\\frac{5}{3}\\right)^{2}$: ora eleva numeratore e denominatore."],
       s:"$\\left(\\frac{5}{3}\\right)^{2}=\\frac{25}{9}$."},
      {t:"Calcola $\\left(-\\frac{1}{2}\\right)^{4}\\cdot\\left(-\\frac{1}{2}\\right)^{-6}$.",
-      h:"Stessa base: si sommano gli esponenti, $4+(-6)=-2$.",
+      hs:["Stessa base: nel prodotto di potenze gli esponenti si sommano.",
+          "$4+(-6)=-2$, quindi resta $\\left(-\\frac{1}{2}\\right)^{-2}$.",
+          "Esponente negativo: ribalta la base in $(-2)$ ed elevala al quadrato. L'esponente pari rende il risultato positivo."],
       s:"$\\left(-\\frac{1}{2}\\right)^{-2}=(-2)^{2}=4$."},
      {t:"Semplifica $\\dfrac{\\left(\\frac{3}{4}\\right)^{5}}{\\left(\\frac{3}{4}\\right)^{3}}$.",
-      h:"Quoziente di potenze con la stessa base: si sottraggono gli esponenti.",
+      hs:["Quoziente di potenze con la stessa base: gli esponenti si sottraggono.",
+          "$5-3=2$: resta $\\left(\\frac{3}{4}\\right)^{2}$."],
       s:"$\\left(\\frac{3}{4}\\right)^{2}=\\frac{9}{16}$."},
      {t:"Scrivi come un'unica potenza: $\\left(\\frac{4}{9}\\right)^{3}\\cdot\\left(\\frac{3}{2}\\right)^{3}$.",
-      h:"Stesso esponente: si moltiplicano le basi. Semplifica il prodotto delle basi prima di elevare.",
+      hs:["Stesso esponente: nel prodotto le basi si moltiplicano, l'esponente resta.",
+          "Calcola prima il prodotto delle basi $\\frac{4}{9}\\cdot\\frac{3}{2}$ semplificando a croce, poi elevalo al cubo."],
       s:"$\\frac{4}{9}\\cdot\\frac{3}{2}=\\frac{2}{3}$, quindi il risultato è $\\left(\\frac{2}{3}\\right)^{3}=\\frac{8}{27}$."},
      {t:"Confronta $\\left(-\\frac{3}{2}\\right)^{2}$ e $-\\left(\\frac{3}{2}\\right)^{2}$.",
-      h:"Osserva dove si trova il segno meno rispetto alla parentesi.",
+      hs:["Guarda dove si trova il segno meno: dentro o fuori dalla parentesi.",
+          "Nel primo il meno è dentro la parentesi, quindi viene elevato; nel secondo resta fuori e non è toccato dall'esponente."],
       s:"$\\left(-\\frac{3}{2}\\right)^{2}=\\frac{9}{4}$ perché l'esponente pari agisce anche sul segno; $-\\left(\\frac{3}{2}\\right)^{2}=-\\frac{9}{4}$ perché il meno resta fuori dalla potenza. Sono opposti."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
@@ -1803,22 +1847,34 @@ $$ \\dfrac{\\ \\frac{1}{2}+\\frac{1}{3}\\ }{\\ \\frac{5}{6}\\ }=\\left(\\frac{1\
     intro:"L'espressione è disegnata come albero: le foglie sono i dati, i nodi le operazioni. L'impulso risale dai rami già calcolati verso il nodo che si sta risolvendo, rendendo visibile l'ordine imposto da parentesi e precedenze."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$.",
-      h:"La moltiplicazione ha priorità sull'addizione: nessuna parentesi la modifica.",
+      hs:["Guarda la gerarchia: quale operazione ha la priorità, l'addizione o la moltiplicazione?",
+          "La moltiplicazione va eseguita per prima; nessuna parentesi la modifica. Calcola $\\frac{2}{3}\\cdot\\frac{3}{4}$ semplificando a croce.",
+          "Ottieni $\\frac{1}{2}$; ora resta solo $\\frac{1}{2}+\\frac{1}{2}$."],
       s:"$\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{1}{2}$, quindi $\\frac{1}{2}+\\frac{1}{2}=1$."},
      {t:"Calcola $\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}$.",
-      h:"Prima la parentesi a frazione unica con $m=\\mathrm{mcm}(2,3)=6$ ($6:2=3$, $6:3=2$); poi moltiplica per il reciproco.",
+      hs:["La parentesi va risolta per prima: è una somma a frazione unica.",
+          "$m=\\mathrm{mcm}(2,3)=6$, con $6:2=3$ e $6:3=2$: la parentesi diventa $\\frac{1\\cdot 3+1\\cdot 2}{6}$.",
+          "La parentesi vale $\\frac{5}{6}$; la divisione diventa un prodotto per il reciproco $\\frac{6}{5}$."],
       s:"Parentesi: $\\frac{1}{2}+\\frac{1}{3}=\\frac{1\\cdot 3+1\\cdot 2}{6}=\\frac{5}{6}$; quindi $\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$."},
      {t:"Calcola $\\left(\\frac{2}{3}\\right)^{2}-\\frac{1}{9}$.",
-      h:"Sviluppa la potenza; i denominatori sono già uguali, quindi basta la differenza dei numeratori su 9.",
+      hs:["La potenza ha priorità sulla sottrazione: sviluppala per prima.",
+          "$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$: ora i due denominatori sono già uguali.",
+          "Basta la differenza dei numeratori su 9, e poi semplifica."],
       s:"$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$, quindi $\\frac{4}{9}-\\frac{1}{9}=\\frac{4-1}{9}=\\frac{3}{9}=\\frac{1}{3}$."},
      {t:"Calcola $\\left[\\left(\\frac{3}{4}-\\frac{1}{2}\\right)\\cdot\\frac{4}{3}\\right]+\\frac{1}{3}$.",
-      h:"Parentesi tonda a frazione unica ($m=4$), poi quadra, poi la somma finale.",
+      hs:["Si parte dalla parentesi più interna, la tonda.",
+          "Tonda a frazione unica con $m=4$: $\\frac{3\\cdot 1-1\\cdot 2}{4}=\\frac{1}{4}$.",
+          "Poi la quadra $\\frac{1}{4}\\cdot\\frac{4}{3}$, e infine la somma con $\\frac{1}{3}$."],
       s:"Tonda: $\\frac{3}{4}-\\frac{1}{2}=\\frac{3\\cdot 1-1\\cdot 2}{4}=\\frac{1}{4}$; quadra: $\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$; somma: $\\frac{1}{3}+\\frac{1}{3}=\\frac{1+1}{3}=\\frac{2}{3}$."},
      {t:"Calcola $\\left(\\frac{1}{2}-\\frac{1}{3}\\right)^{-1}$.",
-      h:"Prima la parentesi a frazione unica ($m=6$); poi l'esponente $-1$ equivale al reciproco.",
+      hs:["Prima la base, cioè la parentesi; l'esponente si applica dopo.",
+          "Parentesi a frazione unica con $m=6$: $\\frac{1\\cdot 3-1\\cdot 2}{6}$.",
+          "La base vale $\\frac{1}{6}$; l'esponente $-1$ significa reciproco."],
       s:"$\\frac{1}{2}-\\frac{1}{3}=\\frac{1\\cdot 3-1\\cdot 2}{6}=\\frac{1}{6}$, e $\\left(\\frac{1}{6}\\right)^{-1}=6$."},
      {t:"Calcola $\\dfrac{\\ \\frac{3}{4}-\\frac{1}{6}\\ }{\\ \\frac{7}{12}\\ }+\\left(\\frac{1}{2}\\right)^{3}$.",
-      h:"Tratta la linea principale come una parentesi: il numeratore a frazione unica con $m=\\mathrm{mcm}(4,6)=12$ ($12:4=3$, $12:6=2$), diviso il denominatore. Poi somma la potenza.",
+      hs:["La linea di frazione principale è una parentesi: calcola prima il suo numeratore, poi dividi per il denominatore.",
+          "Numeratore a frazione unica con $m=\\mathrm{mcm}(4,6)=12$ ($12:4=3$, $12:6=2$): $\\frac{3\\cdot 3-1\\cdot 2}{12}$.",
+          "Il numeratore vale $\\frac{7}{12}$: la frazione complessa è $\\frac{7}{12}\\div\\frac{7}{12}=1$. Manca solo la potenza $\\left(\\frac{1}{2}\\right)^{3}$ da sommare."],
       s:"Numeratore: $\\frac{3}{4}-\\frac{1}{6}=\\frac{3\\cdot 3-1\\cdot 2}{12}=\\frac{9-2}{12}=\\frac{7}{12}$; quindi $\\frac{7}{12}\\div\\frac{7}{12}=1$. Infine $1+\\frac{1}{8}=\\frac{1\\cdot 8+1\\cdot 1}{8}=\\frac{9}{8}$."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
@@ -2182,30 +2238,53 @@ function render(scroll){
   }else if(sc.type==="ex"){
     const head=document.createElement("div");head.className="card";
     head.innerHTML="<h2 style='margin-top:0'>Esercizi — "+ar.title.toLowerCase()+"</h2>"+
-      "<p style='margin-bottom:0'>Prova a risolvere ogni esercizio prima di aprire il suggerimento. "+
-      "Il suggerimento indica la strada, la soluzione mostra il procedimento completo.</p>";
+      "<p style='margin-bottom:0'>Prova a risolvere ogni esercizio prima di aprire i suggerimenti. "+
+      "I suggerimenti si scoprono <strong>uno alla volta</strong>, a richiesta: ognuno aggiunge un passo, senza svelare subito la risposta. "+
+      "La soluzione mostra il procedimento completo.</p>";
     panel.appendChild(head);
     const box=document.createElement("div");box.className="card";
     sc.items.forEach((it,i)=>{
+      const hints = it.hs || (it.h?[it.h]:[]);
+      const N=hints.length;
       const e=document.createElement("div");e.className="ex";
-      e.innerHTML=
-        "<span class='num'>Esercizio "+(i+1)+"</span>"+
-        "<div>"+it.t+"</div>"+
-        "<div class='btnrow'>"+
-          "<button class='btn' type='button' data-k='h'>Mostra suggerimento</button>"+
-          "<button class='btn' type='button' data-k='s'>Mostra soluzione</button>"+
-        "</div>"+
-        "<div class='reveal hint hidden'><span class='lab'>Suggerimento</span>"+it.h+"</div>"+
-        "<div class='reveal sol hidden'><span class='lab'>Soluzione</span>"+it.s+"</div>";
-      const hb=e.querySelector("[data-k='h']"), sb=e.querySelector("[data-k='s']");
-      const hd=e.querySelector(".hint"), sd=e.querySelector(".sol");
-      hb.addEventListener("click",()=>{
-        const open=!hd.classList.toggle("hidden");
-        hb.textContent=open?"Nascondi suggerimento":"Mostra suggerimento";
-      });
+      e.innerHTML="<span class='num'>Esercizio "+(i+1)+"</span><div>"+it.t+"</div>";
+
+      const meta=document.createElement("div");meta.className="hintmeta";
+      if(N>0)meta.textContent=N+" suggeriment"+(N===1?"o":"i")+" disponibil"+(N===1?"e":"i")+" — si scoprono a uno a uno";
+
+      const row=document.createElement("div");row.className="btnrow";
+      const hb=document.createElement("button");hb.className="btn";hb.type="button";
+      const sb=document.createElement("button");sb.className="btn";sb.type="button";sb.textContent="Mostra soluzione";
+      if(N>0)row.appendChild(hb);
+      row.appendChild(sb);
+
+      const hc=document.createElement("div");
+      const sd=document.createElement("div");sd.className="reveal sol hidden";
+      sd.innerHTML="<span class='lab'>Soluzione</span>"+it.s;
+
+      e.appendChild(meta);e.appendChild(row);e.appendChild(hc);e.appendChild(sd);
+
+      let shown=0;
+      function renderHints(){
+        hc.innerHTML="";
+        for(let k=0;k<shown;k++){
+          const d=document.createElement("div");d.className="reveal hint";
+          d.innerHTML="<span class='lab'>Suggerimento "+(k+1)+" di "+N+"</span>"+hints[k];
+          hc.appendChild(d);
+        }
+        if(shown===0)hb.textContent="Mostra suggerimento"+(N>1?" (1 di "+N+")":"");
+        else if(shown<N)hb.textContent="Suggerimento successivo ("+(shown+1)+" di "+N+")";
+        else hb.textContent="Nascondi suggerimenti";
+        typeset(hc);
+      }
+      if(N>0){
+        renderHints();
+        hb.addEventListener("click",()=>{ shown=shown<N?shown+1:0; renderHints(); });
+      }
       sb.addEventListener("click",()=>{
         const open=!sd.classList.toggle("hidden");
         sb.textContent=open?"Nascondi soluzione":"Mostra soluzione";
+        typeset(sd);
       });
       box.appendChild(e);
     });
