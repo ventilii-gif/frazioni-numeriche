@@ -719,9 +719,11 @@ SIMS.addizione={
     const A=F(v.a,v.b),B=F(v.c,v.e);
     const R=v.op==="+"?A.add(B):A.sub(B);
     const m=lcm(v.b,v.e);
-    api.setReadout("$"+texFrac(v.a,v.b)+(v.op==="+"?"+":"-")+texFrac(v.c,v.e)+
-      "="+texFrac(v.a*(m/v.b),m)+(v.op==="+"?"+":"-")+texFrac(v.c*(m/v.e),m)+
-      "="+texFrac(v.a*(m/v.b)+(v.op==="+"?1:-1)*v.c*(m/v.e),m)+"="+R.tex()+"$"+
+    const p1=v.a*(m/v.b), p2=v.c*(m/v.e), sg=(v.op==="+"?"+":"-");
+    api.setReadout("$"+texFrac(v.a,v.b)+sg+texFrac(v.c,v.e)+
+      "=\\frac{"+v.a+"\\cdot"+(m/v.b)+sg+v.c+"\\cdot"+(m/v.e)+"}{"+m+"}"+
+      "=\\frac{"+p1+sg+p2+"}{"+m+"}"+
+      "="+texFrac(p1+(v.op==="+"?1:-1)*p2,m)+"="+R.tex()+"$"+
       " &nbsp; <span style='font-size:.85rem;color:var(--muted)'>mcm("+v.b+", "+v.e+") = "+m+"</span>");
   },
   draw(ctx,W,H,t,v,api){
@@ -1422,14 +1424,17 @@ $$ \\frac{a}{b}+\\frac{c}{d}=\\frac{ad+bc}{bd} \\qquad\\qquad \\frac{a}{b}-\\fra
 <p>Questa è la definizione formale dell'addizione in $\\mathbb{Q}$. Si dimostra che il risultato <em>non dipende dai rappresentanti scelti</em>: sostituendo $\\frac{a}{b}$ con una frazione equivalente si ottiene una somma equivalente. È la condizione che rende l'operazione ben definita sulle classi.</p>
 
 <h3>Il metodo del minimo comune denominatore</h3>
-<p>Il prodotto $bd$ è sempre un denominatore comune, ma non il più piccolo. Conviene usare $m=\\mathrm{mcm}(b,d)$:</p>
+<p>Il prodotto $bd$ è sempre un denominatore comune, ma non il più piccolo. Conviene usare $m=\\mathrm{mcm}(b,d)$ e scrivere <strong>una sola frazione</strong>, seguendo questo algoritmo:</p>
 <ol>
-<li>calcolare $m=\\mathrm{mcm}(b,d)$;</li>
-<li>per ciascuna frazione, moltiplicare numeratore e denominatore per $m:b$ e $m:d$ rispettivamente (proprietà invariantiva);</li>
-<li>sommare o sottrarre i numeratori, mantenendo il denominatore $m$;</li>
-<li>ridurre il risultato ai minimi termini.</li>
+<li><strong>Nuovo denominatore.</strong> Calcolare $m=\\mathrm{mcm}(b,d)$: sarà il denominatore comune.</li>
+<li><strong>Un'unica frazione.</strong> Scrivere una sola linea di frazione con denominatore $m$.</li>
+<li><strong>Numeratore indicato.</strong> Al numeratore scrivere la somma <em>indicata</em> (non ancora svolta) dei prodotti <em>indicati</em> di ciascun vecchio numeratore per il quoziente fra il nuovo denominatore e il rispettivo vecchio denominatore: $$ \\frac{a}{b}+\\frac{c}{d}=\\frac{a\\cdot(m:b)+c\\cdot(m:d)}{m} $$</li>
+<li><strong>Svolgere.</strong> Eseguire prima i prodotti al numeratore, poi la somma (o la differenza).</li>
+<li><strong>Semplificare.</strong> Se il risultato non è già ridotto, portarlo ai minimi termini.</li>
 </ol>
-<p>Esempio: $\\frac{5}{6}-\\frac{3}{8}$ con $\\mathrm{mcm}(6,8)=24$ diventa $\\frac{20}{24}-\\frac{9}{24}=\\frac{11}{24}$.</p>
+<p>Esempio: $\\frac{5}{6}-\\frac{3}{8}$ con $m=\\mathrm{mcm}(6,8)=24$ (quindi $m:6=4$ e $m:8=3$):</p>
+$$ \\frac{5}{6}-\\frac{3}{8}=\\frac{5\\cdot 4-3\\cdot 3}{24}=\\frac{20-9}{24}=\\frac{11}{24} $$
+<p>La scrittura a numeratore unico evita di ricopiare due frazioni separate e rende esplicito che si sta operando su una <em>sola</em> frazione.</p>
 
 <div class="box note">
 <span class="lab">Perché il mcm</span>
@@ -1456,23 +1461,23 @@ $$ \\frac{a}{b}+\\left(-\\frac{a}{b}\\right)=0 $$
     intro:"La frazione A è in ciano, la B in ambra: due colori distinti per seguirle separatamente prima che si sovrappongano sulla barra risultato. Il ciclo attraversa le fasi del procedimento: denominatori diversi, riduzione al mcm, unione (o sottrazione) delle parti."},
    {id:"esercizi",label:"Esercizi",type:"ex",items:[
      {t:"Calcola $\\frac{2}{3}+\\frac{1}{4}$.",
-      h:"$\\mathrm{mcm}(3,4)=12$. Moltiplica la prima per $\\frac{4}{4}$ e la seconda per $\\frac{3}{3}$.",
-      s:"$\\frac{2}{3}+\\frac{1}{4}=\\frac{8}{12}+\\frac{3}{12}=\\frac{11}{12}$, già ridotta."},
+      h:"$\\mathrm{mcm}(3,4)=12$. Scrivi un'unica frazione di denominatore 12 e al numeratore la somma indicata: $2\\cdot(12:3)+1\\cdot(12:4)$.",
+      s:"$\\frac{2}{3}+\\frac{1}{4}=\\frac{2\\cdot 4+1\\cdot 3}{12}=\\frac{8+3}{12}=\\frac{11}{12}$, già ridotta."},
      {t:"Calcola $\\frac{7}{12}-\\frac{5}{18}$.",
-      h:"$12=2^2\\cdot3$ e $18=2\\cdot3^2$: il mcm si ottiene prendendo ogni fattore con l'esponente massimo.",
-      s:"$\\mathrm{mcm}(12,18)=2^2\\cdot3^2=36$; $\\frac{21}{36}-\\frac{10}{36}=\\frac{11}{36}$."},
+      h:"$12=2^2\\cdot3$ e $18=2\\cdot3^2$, quindi $m=\\mathrm{mcm}(12,18)=2^2\\cdot3^2=36$; poi $36:12=3$ e $36:18=2$.",
+      s:"$\\frac{7}{12}-\\frac{5}{18}=\\frac{7\\cdot 3-5\\cdot 2}{36}=\\frac{21-10}{36}=\\frac{11}{36}$, già ridotta."},
      {t:"Calcola $\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}$.",
-      h:"Un unico denominatore comune per tutte e tre: $\\mathrm{mcm}(2,3,6)=6$.",
-      s:"$\\frac{3}{6}+\\frac{2}{6}+\\frac{1}{6}=\\frac{6}{6}=1$."},
+      h:"Un unico denominatore per tutte e tre: $m=\\mathrm{mcm}(2,3,6)=6$. Al numeratore la somma indicata dei tre prodotti, ciascuno con $m$ diviso il rispettivo denominatore.",
+      s:"$\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}=\\frac{1\\cdot 3+1\\cdot 2+1\\cdot 1}{6}=\\frac{3+2+1}{6}=\\frac{6}{6}=1$."},
      {t:"Determina $x$ tale che $\\frac{3}{10}+x=\\frac{4}{5}$.",
-      h:"Isola $x$: $x=\\frac{4}{5}-\\frac{3}{10}$, con denominatore comune 10.",
-      s:"$x=\\frac{8}{10}-\\frac{3}{10}=\\frac{5}{10}=\\frac{1}{2}$."},
+      h:"Isola $x=\\frac{4}{5}-\\frac{3}{10}$; poi $m=\\mathrm{mcm}(5,10)=10$, con $10:5=2$ e $10:10=1$.",
+      s:"$x=\\frac{4}{5}-\\frac{3}{10}=\\frac{4\\cdot 2-3\\cdot 1}{10}=\\frac{8-3}{10}=\\frac{5}{10}=\\frac{1}{2}$."},
      {t:"Un serbatoio è pieno per $\\frac{3}{8}$; se ne aggiunge una quantità pari a $\\frac{5}{12}$ della capacità. Quanto resta da riempire?",
-      h:"Somma le due parti presenti, poi sottrai il totale da 1, cioè da $\\frac{24}{24}$.",
-      s:"$\\frac{3}{8}+\\frac{5}{12}=\\frac{9}{24}+\\frac{10}{24}=\\frac{19}{24}$; resta $1-\\frac{19}{24}=\\frac{5}{24}$ della capacità."},
+      h:"Somma le due parti con $m=\\mathrm{mcm}(8,12)=24$ ($24:8=3$, $24:12=2$), poi sottrai il totale da $1=\\frac{24}{24}$.",
+      s:"Presente: $\\frac{3}{8}+\\frac{5}{12}=\\frac{3\\cdot 3+5\\cdot 2}{24}=\\frac{9+10}{24}=\\frac{19}{24}$; resta $1-\\frac{19}{24}=\\frac{5}{24}$ della capacità."},
      {t:"Verifica che $\\frac{a}{b}+\\frac{c}{d}$ dà lo stesso risultato usando $\\frac{2}{6}$ oppure $\\frac{1}{3}$ come primo addendo, con $\\frac{1}{4}$ come secondo.",
-      h:"Calcola le due somme separatamente e riduci entrambi i risultati alla forma canonica.",
-      s:"$\\frac{2}{6}+\\frac{1}{4}=\\frac{4}{12}+\\frac{3}{12}=\\frac{7}{12}$ e $\\frac{1}{3}+\\frac{1}{4}=\\frac{4}{12}+\\frac{3}{12}=\\frac{7}{12}$: l'operazione è ben definita sulle classi di equivalenza, come deve essere."}
+      h:"Calcola le due somme con il metodo a frazione unica e riduci entrambi i risultati alla forma canonica.",
+      s:"$\\frac{2}{6}+\\frac{1}{4}=\\frac{2\\cdot 2+1\\cdot 3}{12}=\\frac{4+3}{12}=\\frac{7}{12}$ e $\\frac{1}{3}+\\frac{1}{4}=\\frac{1\\cdot 4+1\\cdot 3}{12}=\\frac{4+3}{12}=\\frac{7}{12}$: l'operazione è ben definita sulle classi di equivalenza, come deve essere."}
    ]},
    {id:"quiz",label:"Quiz",type:"quiz"}
   ]
@@ -1859,19 +1864,19 @@ addizione:[
   w:"Dà $\\frac{2}{5}$, che sta fra $\\frac{1}{3}$ e $\\frac{1}{2}$, mentre la somma vale $\\frac{5}{6}$. È un'operazione con un suo significato (la mediante), ma non è l'addizione."},
  {q:"Calcola $\\frac{2}{3}+\\frac{1}{4}$.",
   o:["$\\frac{11}{12}$","$\\frac{3}{7}$","$\\frac{3}{12}$","$\\frac{11}{24}$"],c:0,type:"problema",
-  w:"$\\mathrm{mcm}(3,4)=12$: $\\frac{8}{12}+\\frac{3}{12}=\\frac{11}{12}$. La risposta $\\frac{3}{7}$ nasce dal sommare numeratori e denominatori separatamente, che non è l'addizione."},
+  w:"$m=\\mathrm{mcm}(3,4)=12$: $\\frac{2\\cdot 4+1\\cdot 3}{12}=\\frac{8+3}{12}=\\frac{11}{12}$. La risposta $\\frac{3}{7}$ nasce dal sommare numeratori e denominatori separatamente, che non è l'addizione."},
  {q:"Calcola $\\frac{5}{6}-\\frac{3}{8}$.",
   o:["$\\frac{11}{24}$","$\\frac{1}{12}$","$\\frac{7}{24}$","$\\frac{11}{48}$"],c:0,type:"problema",
-  w:"$\\mathrm{mcm}(6,8)=24$: $\\frac{20}{24}-\\frac{9}{24}=\\frac{11}{24}$. Il valore $\\frac{11}{48}$ si ottiene usando come denominatore il prodotto $48$ ma dimenticando di adeguare i numeratori."},
+  w:"$m=\\mathrm{mcm}(6,8)=24$: $\\frac{5\\cdot 4-3\\cdot 3}{24}=\\frac{20-9}{24}=\\frac{11}{24}$. Il valore $\\frac{11}{48}$ si ottiene usando come denominatore il prodotto $48$ ma dimenticando di adeguare i numeratori."},
  {q:"Calcola $\\frac{3}{10}+\\frac{7}{15}$.",
   o:["$\\frac{23}{30}$","$\\frac{10}{25}$","$\\frac{23}{60}$","$\\frac{21}{30}$"],c:0,type:"problema",
-  w:"$\\mathrm{mcm}(10,15)=30$: $\\frac{9}{30}+\\frac{14}{30}=\\frac{23}{30}$, già ridotta perché 23 è primo e non divide 30."},
+  w:"$m=\\mathrm{mcm}(10,15)=30$ ($30:10=3$, $30:15=2$): $\\frac{3\\cdot 3+7\\cdot 2}{30}=\\frac{9+14}{30}=\\frac{23}{30}$, già ridotta perché 23 è primo e non divide 30."},
  {q:"Calcola $\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}$.",
   o:["$1$","$\\frac{3}{11}$","$\\frac{5}{6}$","$\\frac{11}{6}$"],c:0,type:"problema",
-  w:"Con denominatore comune 6: $\\frac{3}{6}+\\frac{2}{6}+\\frac{1}{6}=\\frac{6}{6}=1$. Conviene ridurre tutte le frazioni allo stesso denominatore in un colpo solo, non a coppie."},
+  w:"Con $m=\\mathrm{mcm}(2,3,6)=6$: $\\frac{1\\cdot 3+1\\cdot 2+1\\cdot 1}{6}=\\frac{3+2+1}{6}=\\frac{6}{6}=1$. Conviene un'unica frazione con tutti gli addendi al numeratore, non calcoli a coppie."},
  {q:"Determina $x$ tale che $\\frac{3}{10}+x=\\frac{4}{5}$.",
   o:["$\\frac{1}{2}$","$\\frac{11}{10}$","$\\frac{1}{5}$","$\\frac{1}{10}$"],c:0,type:"problema",
-  w:"$x=\\frac{4}{5}-\\frac{3}{10}=\\frac{8}{10}-\\frac{3}{10}=\\frac{5}{10}=\\frac{1}{2}$. Il valore $\\frac{11}{10}$ si ottiene sommando invece di sottrarre."}
+  w:"$x=\\frac{4}{5}-\\frac{3}{10}=\\frac{4\\cdot 2-3\\cdot 1}{10}=\\frac{8-3}{10}=\\frac{5}{10}=\\frac{1}{2}$. Il valore $\\frac{11}{10}$ si ottiene sommando invece di sottrarre."}
 ],
 moltiplicazione:[
  {q:"Il prodotto $\\frac{a}{b}\\cdot\\frac{c}{d}$ vale:",
