@@ -213,6 +213,16 @@ select{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line-
   border-radius:10px;font-size:1.02rem;text-align:center;min-height:52px;
   display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px}
 .simnote{font-size:.86rem;color:var(--muted);margin:.9em 0 0;font-family:ui-sans-serif,system-ui,sans-serif}
+.simnarr{border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 10px 10px 0;padding:10px 15px;margin-top:12px;font-size:.94rem;
+  transition:background-color .35s ease, border-color .35s ease}
+.simnarr .lab{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.68rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--accent-ink);display:block;margin-bottom:.3em}
+.simnarr p{margin:0}
+.simnarr.done{border-left-color:var(--ok);background:var(--ok-soft)}
+.simnarr.done .lab{color:var(--ok)}
+.btn.primary.pulse{animation:pulseGlow 1.6s ease-in-out infinite}
+@keyframes pulseGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
 
 /* ---------- ESERCIZI ---------- */
 .ex{border:1px solid var(--line);border-radius:12px;padding:15px 17px;margin:0 0 14px;background:var(--surface)}
@@ -498,6 +508,8 @@ function makeSim(host,spec){
   const cv=document.createElement("canvas");
   holder.appendChild(cv);wrap.appendChild(holder);
 
+  const narr=document.createElement("div");narr.className="simnarr";wrap.appendChild(narr);
+
   const ctlBox=document.createElement("div");ctlBox.className="controls";
   const vals={};
   (spec.controls||[]).forEach(c=>{
@@ -555,14 +567,27 @@ function makeSim(host,spec){
     }
     ctx.setTransform(dpr,0,0,dpr,0,0);
   }
-  let t0=performance.now(),paused=false,pauseT=0,acc=0;
+  let t0=performance.now(),paused=false,pauseT=0,acc=0,finished=false,lastNarr=null;
+  function setFinished(v){
+    if(v===finished)return;
+    finished=v;
+    playBtn.disabled=v;
+    playBtn.textContent=v?"Terminata":"Pausa";
+    againBtn.classList.toggle("primary",v);
+    againBtn.classList.toggle("pulse",v);
+  }
   const api={
     vals:vals,
     setReadout(html){read.innerHTML=html;typeset(read);},
-    restart(){acc=0;t0=performance.now();},
+    setNarration(html,done){
+      if(html!==lastNarr){narr.innerHTML=html;lastNarr=html;typeset(narr);}
+      narr.classList.toggle("done",!!done);
+    },
+    restart(){acc=0;t0=performance.now();setFinished(false);if(paused){paused=false;playBtn.textContent="Pausa";}},
     state:{}
   };
   playBtn.addEventListener("click",()=>{
+    if(finished)return;
     paused=!paused;playBtn.textContent=paused?"Riprendi":"Pausa";
     if(paused)pauseT=performance.now();else t0+=performance.now()-pauseT;
   });
@@ -572,7 +597,12 @@ function makeSim(host,spec){
 
   function frame(now){
     fit();
-    const t=paused?acc:(acc=(now-t0)/1000);
+    let t=paused?acc:(acc=(now-t0)/1000);
+    if(spec.duration){
+      const tot=spec.duration(vals);
+      if(t>=tot){ t=tot; setFinished(true); }
+      else{ setFinished(false); }
+    }
     ctx.clearRect(0,0,cssW,cssH);
     ctx.fillStyle=THEME["surface-2"]||"#eee";
     ctx.fillRect(0,0,cssW,cssH);
@@ -621,7 +651,7 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 /* fase ciclica: ritorna {i, p} indice della fase e avanzamento 0..1 */
 function phase(t,durations){
   const tot=durations.reduce((a,b)=>a+b,0);
-  let x=t%tot;
+  let x=Math.max(0,Math.min(t,tot-1e-6));
   for(let i=0;i<durations.length;i++){
     if(x<durations[i])return {i:i,p:x/durations[i],raw:x};
     x-=durations[i];
@@ -647,11 +677,21 @@ SIMS.semplificazione={
     const g=gcd(v.n,v.d)||1;
     api.setReadout("$"+texFrac(v.n,v.d)+" \\;=\\; "+texFrac(v.n/g,v.d/g)+"$ &nbsp;&nbsp; <span style='font-size:.85rem;color:var(--muted)'>MCD(|"+v.n+"|, "+v.d+") = "+g+(g===1?" &rarr; già ridotta":"")+(v.n<0?" &middot; il segno resta al numeratore":"")+"</span>");
   },
+  duration:()=>5.3,
   draw(ctx,W,H,t,v,api){
     const n=v.n,d=v.d,g=gcd(n,d)||1;
     const nd=d/g, nn=n/g;
     const an=Math.abs(n), ann=Math.abs(nn);
-    const ph=phase(t,[1.6,1.9,1.8]);
+    const durs=[1.6,1.9,1.8];
+    const ph=phase(t,durs);
+    const done=t>=5.3-1e-6;
+    const steps=["Si parte dalla frazione "+(n<0?"-":"")+an+"/"+d+", suddivisa in "+d+" parti uguali.",
+      "Le parti si raggruppano a gruppi di "+g+" (il MCD): i separatori interni a ciascun gruppo svaniscono e le celle si fondono.",
+      "La frazione ridotta "+(nn<0?"-":"")+ann+"/"+nd+" rappresenta la stessa porzione di intero, con numeri più piccoli."];
+    api.setNarration(
+      "<span class='lab'>"+(done?"Animazione completata":"Passo "+(ph.i+1)+" di 3")+"</span>"+
+      "<p>"+steps[ph.i]+(done?" <strong>Premi «Riavvia animazione» per rivederla.</strong>":"")+"</p>",
+      done);
     let p=0;
     if(ph.i===1)p=easeInOut(ph.p); else if(ph.i===2)p=1;
     const pad=Math.min(34,W*0.06);
@@ -734,10 +774,12 @@ SIMS.addizione={
       "="+texFrac(p1+(v.op==="+"?1:-1)*p2,m)+"="+R.tex()+"$"+
       " &nbsp; <span style='font-size:.85rem;color:var(--muted)'>mcm("+v.b+", "+v.e+") = "+m+"</span>");
   },
+  duration:()=>7.6,
   draw(ctx,W,H,t,v,api){
     const a=v.a,b=v.b,c=v.c,e=v.e,add=v.op==="+";
     const m=lcm(b,e), A2=a*(m/b), B2=c*(m/e);
     const ph=phase(t,[1.7,1.9,2.1,1.9]);
+    const done=t>=7.6-1e-6;
     const pad=Math.min(30,W*0.05);
     const bw=W-pad*2-46, bx=pad, bh=Math.min(46,H*0.15);
     const yA=H*0.18, yB=H*0.45, yR=H*0.78;
@@ -798,10 +840,16 @@ SIMS.addizione={
       ctx.restore();
     }
     const RR=add?F(a,b).add(F(c,e)):F(a,b).sub(F(c,e));
-    label(ctx,["stesse frazioni, denominatori diversi",
-               "riduzione allo stesso denominatore: "+m,
-               add?"le parti si uniscono":(finalNeg?"si tolgono più parti di quante presenti: si va sotto lo zero":"le parti si tolgono"),
-               "risultato: "+(add?A2+B2:A2-B2)+"/"+m+" = "+RR.txt()+(finalNeg?"  (negativo)":"")][ph.i],bx,H*0.955,12.5,finalNeg&&ph.i>=2?THEME.warn:THEME.muted);
+    const steps=[
+      "Le due frazioni "+a+"/"+b+" e "+c+"/"+e+" hanno denominatori diversi: non si possono ancora sommare le parti direttamente.",
+      "Entrambe si riscrivono con lo stesso denominatore, il mcm("+b+", "+e+") = "+m+".",
+      add?"Le parti si uniscono sulla stessa barra." : (finalNeg?"Si tolgono più parti di quante presenti in A: il risultato scende sotto lo zero.":"Le parti di B si tolgono da quelle di A."),
+      "Risultato: "+(add?A2+B2:A2-B2)+"/"+m+" = "+RR.txt()+(finalNeg?" (negativo)":"")
+    ];
+    api.setNarration(
+      "<span class='lab'>"+(done?"Animazione completata":"Passo "+(ph.i+1)+" di 4")+"</span>"+
+      "<p>"+steps[ph.i]+(done?" <strong>Premi «Riavvia animazione» per rivederla.</strong>":"")+"</p>",
+      done);
 
     function drawRow(y,den,num,col,cap,conv,m,num2){
       const showDen = conv>0.5?m:den;
@@ -848,11 +896,13 @@ SIMS.moltiplicazione={
       "\\frac{"+na+"\\cdot"+nc+"}{"+v.b+"\\cdot"+v.e+"}="+texFrac(v.a*v.c,v.b*v.e)+"="+R.tex()+"$"+
       ((v.a<0||v.c<0)?" &nbsp; <span style='font-size:.85rem;color:var(--muted)'>segni "+(v.a<0?"−":"+")+" e "+(v.c<0?"−":"+")+" → prodotto "+(((v.a<0)!==(v.c<0))?"negativo":"positivo")+"</span>":""));
   },
+  duration:()=>5.6,
   draw(ctx,W,H,t,v,api){
     const b=v.b,e=v.e,av=Math.abs(v.a),cv=Math.abs(v.c);
     const a=Math.min(av,b),c=Math.min(cv,e);
     const neg=(v.a<0)!==(v.c<0), icol=neg?THEME.warn:THEME.accent;
     const ph=phase(t,[1.5,1.5,2.6]);
+    const done=t>=5.6-1e-6;
     const S=Math.min(W*0.62,H*0.86);
     const x0=Math.max(14,W*0.06), y0=(H-S)/2;
     const pA = ph.i===0?easeInOut(ph.p):1;
@@ -922,12 +972,29 @@ SIMS.moltiplicazione={
         label(ctx,"è minore di entrambe",px,by+50,11.5,THEME.muted,"left",500);
       }
     }
-    label(ctx,["si evidenzia la prima frazione (colonne)","si evidenzia la seconda frazione (righe)","la parte comune è il prodotto"][ph.i],
-      x0,y0+S+22,12.5,THEME.muted);
+    const steps=[
+      "Si evidenzia la prima frazione: "+(v.a<0?"-":"")+a+"/"+b+" delle colonne, in ciano.",
+      "Si evidenzia la seconda frazione: "+(v.c<0?"-":"")+c+"/"+e+" delle righe, in ambra.",
+      "La parte comune, tratteggiata, è il prodotto: "+(neg?"segni discordi → risultato negativo.":"celle comuni su celle totali.")
+    ];
+    api.setNarration(
+      "<span class='lab'>"+(done?"Animazione completata":"Passo "+(ph.i+1)+" di 3")+"</span>"+
+      "<p>"+steps[ph.i]+(done?" <strong>Premi «Riavvia animazione» per rivederla.</strong>":"")+"</p>",
+      done);
   }
 };
 
 /* ---------- 5.4 DIVISIONE ---------- */
+function divInfo(v){
+  if(v.c===0)return null;
+  const A=F(v.a,v.b), B=F(v.c,v.e);
+  const Am=Math.abs(A.v), Bm=Math.abs(B.v);
+  const q=Am/Bm;
+  const full=Math.floor(q+1e-9), frac=q-full;
+  const total=Math.min(full+(frac>1e-9?1:0),60);
+  const speed=q>16?9:q>6?3.2:1.5;
+  return {full,frac,total,speed};
+}
 SIMS.divisione={
   note:"La divisione risponde alla domanda: quante volte il divisore sta nel dividendo? Le unità ambra avanzano una alla volta lungo il segmento; l'ultima, se parziale, è tratteggiata e corrisponde alla parte frazionaria del quoziente.",
   controls:[
@@ -944,8 +1011,17 @@ SIMS.divisione={
     api.setReadout("$"+texFrac(v.a,v.b)+"\\div"+texFrac(v.c,v.e)+"="+texFrac(v.a,v.b)+"\\cdot"+texFrac(v.e,v.c)+"="+
       texFrac(v.a*v.e,v.b*v.c)+"="+Q.tex()+"$ &nbsp; <span style='font-size:.85rem;color:var(--muted)'>in grandezza ci sta "+qmag.txt()+" volte"+((v.a<0||v.c<0)?" · quoziente "+(neg?"negativo":"positivo"):"")+"</span>");
   },
+  duration(v){
+    const info=divInfo(v);
+    if(!info)return 2;
+    return info.total/info.speed+1.4;
+  },
   draw(ctx,W,H,t,v,api){
-    if(v.c===0){ label(ctx,"Il divisore non può essere 0.",W/2,H/2,14,THEME.warn,"center",700); return; }
+    if(v.c===0){
+      label(ctx,"Il divisore non può essere 0.",W/2,H/2,14,THEME.warn,"center",700);
+      api.setNarration("<span class='lab'>Attenzione</span><p>Il divisore non può essere 0: la divisione non è definita.</p>",false);
+      return;
+    }
     const A=F(v.a,v.b), B=F(v.c,v.e), Q=A.div(B);
     const neg=(v.a<0)!==(v.c<0), qcol=neg?THEME.warn:THEME.accent;
     const Am=Math.abs(A.v), Bm=Math.abs(B.v);
@@ -979,10 +1055,9 @@ SIMS.divisione={
     label(ctx,"dividendo "+A.txt(),bx,yBar-bh/2-14,13,THEME.fa,"left",700);
 
     /* unità del divisore che avanzano */
-    const full=Math.floor(q+1e-9), frac=q-full;
-    const total=Math.min(full+(frac>1e-9?1:0),60);
-    const speed = q>16?9:q>6?3.2:1.5;
-    const shown=Math.min(total,Math.floor((t*speed)%(total+2.2)));
+    const {full,frac,total,speed}=divInfo(v);
+    const shown=Math.min(total,Math.floor(t*speed));
+    const tot=total/speed+1.4, done=t>=tot-1e-6;
     const uw=sc*Bm;
     for(let k=0;k<shown;k++){
       const isPartial = (k===full);
@@ -1016,6 +1091,15 @@ SIMS.divisione={
       +(full>0? "   (grandezza: "+full+" volte"+(frac>1e-9?" più una parte":"")+")":"")
       +(neg?"   · segni discordi → negativo":""),
       bx,yy,13,qcol,"left",700);
+
+    let step;
+    if(shown<=0) step="Si mostra il dividendo "+A.txt()+", il segmento pieno.";
+    else if(shown<total) step="Le unità del divisore "+B.txt()+" avanzano una alla volta: finora ci sta "+shown+" vol"+(shown===1?"ta":"te")+".";
+    else step="Il divisore è stato confrontato per intero: in grandezza ci sta "+full+(frac>1e-9?" volte intere più una parte":" volte esatte")+".";
+    api.setNarration(
+      "<span class='lab'>"+(done?"Animazione completata":"In corso")+"</span>"+
+      "<p>"+step+(done?" Quoziente: "+Q.txt()+". <strong>Premi «Riavvia animazione» per rivederla.</strong>":"")+"</p>",
+      done);
   }
 };
 
@@ -1038,9 +1122,17 @@ SIMS.potenza={
     }catch(err){ txt="<span style='color:var(--warn)'>La base non può essere 0 con esponente negativo.</span>"; }
     api.setReadout(txt);
   },
+  duration(v){
+    if(v.a===0)return 2;
+    return (Math.abs(v.k)+2.4)/0.9;
+  },
   draw(ctx,W,H,t,v,api){
     let kk=Math.abs(v.k), flipped=v.k<0;
-    if(v.a===0){ label(ctx,"Base nulla: le potenze valgono 0, e con esponente minore o uguale a 0 non sono definite.",W/2,H/2,14,THEME.warn,"center",700); return; }
+    if(v.a===0){
+      label(ctx,"Base nulla: le potenze valgono 0, e con esponente minore o uguale a 0 non sono definite.",W/2,H/2,14,THEME.warn,"center",700);
+      api.setNarration("<span class='lab'>Attenzione</span><p>Base nulla: le potenze valgono 0, e con esponente non positivo non sono definite.</p>",false);
+      return;
+    }
     const negBase=v.a<0;
     /* base con segno e sua grandezza; la geometria usa la grandezza, il colore il segno */
     const baseFr = flipped ? F(v.b,v.a) : F(v.a,v.b);   /* base effettiva (già ribaltata se k<0) */
@@ -1059,7 +1151,8 @@ SIMS.potenza={
     }
     let mx=1; dims.forEach(d=>{mx=Math.max(mx,d.w,d.h);});
     const u=S/mx;
-    const step=Math.floor((t*0.9)%(kk+2.4));
+    const step=Math.floor(t*0.9);
+    const tot=(kk+2.4)/0.9, done=t>=tot-1e-6;
     for(let i=0;i<=kk;i++){
       const alive=i<=step; if(!alive)continue;
       const d=dims[i];
@@ -1089,6 +1182,20 @@ SIMS.potenza={
     label(ctx,"quadrato unitario di area 1",x0,y0-12,12,THEME.muted);
     if(flipped)label(ctx,"esponente negativo: base ribaltata → "+baseFr.txt(),x0,y0+S+44,12,THEME.fb,"left",600);
     else if(negBase)label(ctx,"base negativa: l'area è la grandezza, il segno è indicato a parte",x0,y0+S+44,12,THEME.fb,"left",600);
+
+    {
+      const j=Math.min(step,kk);
+      const val=valAt(j);
+      const areaTxt=F(Math.abs(val.n),val.d).txt();
+      const stepText = j===0
+        ? "Si parte dal quadrato unitario, di area 1."
+        : "Si prende la stessa frazione della figura precedente: dopo "+j+" pass"+(j===1?"o":"i")+" l'area vale "+areaTxt
+          +(val.v<0?", con valore "+val.txt()+" (segno negativo: esponente dispari)":(negBase?" (segno positivo: esponente pari)":""))+".";
+      api.setNarration(
+        "<span class='lab'>"+(done?"Animazione completata":"Passo "+(j+1)+" di "+(kk+1))+"</span>"+
+        "<p>"+stepText+(done?" <strong>Premi «Riavvia animazione» per rivederla.</strong>":"")+"</p>",
+        done);
+    }
 
     /* retta numerica dei valori successivi (con segno) */
     const lx = two? W*0.56 : Math.max(14,W*0.06);
@@ -1151,6 +1258,7 @@ const EXPRS=[
     tree:nOp("mul",nOp("div",nLeaf(F(2,5)),nOp("sub",nLeaf(F(1,2)),nLeaf(F(1,10)))),nOp("pow",nLeaf(F(2,3)),nInt(-1))) }
 ];
 const OPSYM={add:"+",sub:"−",mul:"·",div:":",pow:"^"};
+EXPRS.forEach(e=>{ e.opCount=postOrder(e.tree,[]).length; });
 function evalNode(n){
   if(n.type==="leaf")return n.fr;
   if(n.type==="int")return F(n.k,1);
@@ -1187,6 +1295,11 @@ SIMS.espressioni={
     const E=EXPRS[+v.ex];
     api.setReadout("$"+E.tex+" = "+evalNode(E.tree).tex()+"$");
   },
+  duration(v){
+    const E=EXPRS[+v.ex];
+    const stepDur=1.4-(v.sp-5)*0.055;
+    return E.opCount*stepDur+1.3;
+  },
   draw(ctx,W,H,t,v,api){
     const E=EXPRS[+v.ex];
     const nodes=[]; const cursor={x:0};
@@ -1198,10 +1311,11 @@ SIMS.espressioni={
     nodes.forEach(n=>{ n._px=padX+n._x*gx; n._py=padY+n._d*gy; });   /* radice in alto, foglie in basso */
     const order=postOrder(E.tree,[]);
     const stepDur=1.4-(v.sp-5)*0.055;
-    const cycle=order.length*stepDur+2.2;
-    const tt=t%cycle;
-    const done=Math.floor(tt/stepDur);
-    const local=(tt/stepDur)-done;
+    const totTime=order.length*stepDur+1.3;
+    const finished=t>=totTime-1e-6;
+    const tt=Math.min(t,totTime-1e-6);
+    const doneCount=Math.min(Math.floor(tt/stepDur),order.length);
+    const local=doneCount<order.length ? (tt/stepDur)-doneCount : 1;
 
     /* rami */
     nodes.forEach(n=>{
@@ -1210,8 +1324,8 @@ SIMS.espressioni={
       kids.forEach(k=>{
         if(!k)return;
         const idx=order.indexOf(n);
-        const active = idx===done;
-        const doneEdge = idx<done;
+        const active = idx===doneCount;
+        const doneEdge = idx<doneCount;
         ctx.save();
         ctx.strokeStyle=doneEdge?hex2rgba(THEME.accent,.55):hex2rgba(THEME["line-strong"],.85);
         ctx.lineWidth=doneEdge?2.2:1.6;
@@ -1232,8 +1346,8 @@ SIMS.espressioni={
     nodes.forEach(n=>{
       const idx=order.indexOf(n);
       const isLeaf=n.type==="leaf"||n.type==="int";
-      const computed=!isLeaf&&idx<done;
-      const active=!isLeaf&&idx===done;
+      const computed=!isLeaf&&idx<doneCount;
+      const active=!isLeaf&&idx===doneCount;
       let txt, col;
       if(n.type==="leaf"){txt=n.fr.txt();col=THEME.fa;}
       else if(n.type==="int"){txt=String(n.k);col=THEME.fb;}
@@ -1257,10 +1371,13 @@ SIMS.espressioni={
       ctx.restore();
       label(ctx,txt,n._px,n._py,13,(computed||active)?THEME.accent:col,"center",700);
     });
-    const doneClamped=Math.min(done,order.length);
-    label(ctx, doneClamped>=order.length? "espressione completata: risultato "+evalNode(E.tree).txt()
-             : "passo "+(doneClamped+1)+" di "+order.length+": si calcola "+OPSYM[order[doneClamped].type],
-      padX-10,H-12,13,THEME.accent,"left",700);
+    const stepText = doneCount>=order.length
+      ? "L'espressione è completata: risultato "+evalNode(E.tree).txt()+"."
+      : "Si calcola il nodo evidenziato: l'operazione «"+OPSYM[order[doneCount].type]+"», appena i suoi due rami sono pronti.";
+    api.setNarration(
+      "<span class='lab'>"+(finished?"Animazione completata":"Passo "+(doneCount+1)+" di "+order.length)+"</span>"+
+      "<p>"+stepText+(finished?" <strong>Premi «Riavvia animazione» per rivederla.</strong>":"")+"</p>",
+      finished);
   }
 };
 
