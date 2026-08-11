@@ -98,6 +98,43 @@ header{
 }
 .head-txt p.sub{margin:0;color:var(--muted);font-size:.95rem}
 
+/* ---------- BADGE STUDENTE ---------- */
+.stud-row{display:flex;align-items:center;gap:10px;padding:0 0 12px;flex-wrap:wrap}
+.stud-row[hidden]{display:none}
+.stud-name{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.82rem;color:var(--muted)}
+.stud-name b{color:var(--accent-ink);font-weight:700}
+.stud-change{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.75rem;font-weight:600;
+  background:none;border:1px solid var(--line-strong);color:var(--muted);border-radius:999px;
+  padding:3px 11px;cursor:pointer}
+.stud-change:hover{border-color:var(--accent);color:var(--accent-ink)}
+.stud-change:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---------- GATE (accesso studente) ---------- */
+.gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(20,17,10,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.gate[hidden]{display:none}
+html[data-theme="dark"] .gate{background:rgba(0,0,0,.62)}
+.gate-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);max-width:460px;width:100%;padding:26px 26px 22px;animation:fade .35s ease}
+.gate-card h2{margin:.1em 0 .4em}
+.gate-card p{font-size:.96rem;color:var(--ink-soft);margin:0 0 1em}
+.gate-card label{display:block;font-family:ui-sans-serif,system-ui,sans-serif;font-size:.72rem;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:.4em}
+.gate-card input{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line-strong);
+  background:var(--surface-2);color:var(--ink);font-family:inherit;font-size:1.05rem}
+.gate-card input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.gate-card .btn.primary{margin-top:14px;width:100%;justify-content:center;padding:11px;font-size:.95rem}
+.gate-err{color:var(--warn);font-size:.88rem;margin:.6em 0 0 !important;font-weight:600}
+.gate-note{font-size:.8rem !important;color:var(--muted);margin:1em 0 0 !important}
+
+/* ---------- BOX REPORT ---------- */
+.report-box{border:1px solid var(--accent);background:var(--accent-soft);border-radius:12px;
+  padding:15px 17px;margin-top:18px}
+.report-box .lab{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:700;color:var(--accent-ink);display:block;margin-bottom:.4em}
+.report-box p{margin:0 0 .8em;font-size:.92rem;color:var(--ink-soft)}
+.report-hint{font-size:.82rem;color:var(--muted);margin:.7em 0 0 !important;font-family:ui-sans-serif,system-ui,sans-serif}
+
 /* ---------- TOGGLE GIORNO/NOTTE ---------- */
 .theme-btn{
   flex:0 0 auto;display:inline-flex;align-items:center;gap:9px;
@@ -314,6 +351,19 @@ footer{border-top:1px solid var(--line);background:var(--surface);color:var(--mu
 <body>
 <div id="sweep"></div>
 
+<div id="gate" class="gate" hidden>
+  <form class="gate-card" id="gateForm">
+    <p class="kicker">Accesso studente</p>
+    <h2>Prima di iniziare</h2>
+    <p>Inserisci il tuo <strong>nome e cognome</strong>. Serve a registrare i tempi di studio e a poter inviare il report all'insegnante al termine di ogni quiz.</p>
+    <label for="gateName">Nome e cognome</label>
+    <input id="gateName" type="text" autocomplete="name" placeholder="Es. Mario Rossi" spellcheck="false">
+    <p id="gateErr" class="gate-err" hidden>Inserisci sia il nome sia il cognome.</p>
+    <button id="gateGo" class="btn primary" type="submit">Entra</button>
+    <p class="gate-note">I dati restano sul tuo dispositivo; nulla viene inviato senza la tua conferma.</p>
+  </form>
+</div>
+
 <header>
   <div class="wrap head-row">
     <div class="head-txt">
@@ -335,6 +385,10 @@ footer{border-top:1px solid var(--line);background:var(--surface);color:var(--mu
       </svg>
       <span id="themeTxt">Notte</span>
     </button>
+  </div>
+  <div class="wrap stud-row" id="studRow" hidden>
+    <span class="stud-name">Studente: <b id="studName"></b></span>
+    <button class="stud-change" id="studChange" type="button">Cambia</button>
   </div>
 </header>
 
@@ -2301,6 +2355,195 @@ const subEl=document.getElementById("subtabs");
 let CUR={a:0,s:0};
 const QSTATE={};
 
+/* ============================================================
+   8.0 SESSIONE STUDENTE — nome, cronometri, report
+   ============================================================ */
+const DEST_EMAIL="ventilii@gmail.com";
+const SESSION={ name:"", startedAt:new Date().toISOString(), subtabTime:{} };
+
+function loadSession(){
+  try{
+    const raw=localStorage.getItem("frazioni-sessione");
+    if(raw){
+      const o=JSON.parse(raw);
+      SESSION.name=o.name||"";
+      SESSION.startedAt=o.startedAt||SESSION.startedAt;
+      SESSION.subtabTime=o.subtabTime||{};
+      if(o.quiz)Object.keys(o.quiz).forEach(k=>{ QSTATE[k]=o.quiz[k]; });
+    }
+  }catch(e){}
+}
+function saveSession(){
+  try{ localStorage.setItem("frazioni-sessione",JSON.stringify({
+    name:SESSION.name, startedAt:SESSION.startedAt, subtabTime:SESSION.subtabTime, quiz:QSTATE
+  })); }catch(e){}
+}
+
+/* ---- cronometro di permanenza per sottoscheda ---- */
+let subKey=null, subSince=0, pageVisible=true, gateOpen=false;
+function subAccrue(){
+  if(subKey!==null && pageVisible && !gateOpen){
+    SESSION.subtabTime[subKey]=(SESSION.subtabTime[subKey]||0)+(performance.now()-subSince)/1000;
+  }
+  subSince=performance.now();
+}
+function subSwitch(key){ subAccrue(); subKey=key; subSince=performance.now(); }
+
+/* ---- cronometro del tempo di risposta per ogni quesito ---- */
+let WATCH=null;   /* {areaId, idx, since} */
+function watchStop(){
+  if(!WATCH)return;
+  const st=QSTATE[WATCH.areaId];
+  if(st && st.tfinal && st.tfinal[WATCH.idx]===null && pageVisible && !gateOpen){
+    st.tacc[WATCH.idx]+=performance.now()-WATCH.since;
+  }
+  WATCH=null;
+}
+function watchStart(areaId,idx){
+  watchStop();
+  const st=QSTATE[areaId];
+  if(st && !st.done && st.ans[idx]===null && st.tfinal[idx]===null){
+    WATCH={areaId:areaId, idx:idx, since:performance.now()};
+  }
+}
+function maybeStartWatch(){
+  const ar=AREAS[CUR.a], sc=ar.sub[CUR.s];
+  if(sc.type==="quiz"){
+    const st=QSTATE[ar.id];
+    if(st && !st.done && st.ans[st.idx]===null) watchStart(ar.id,st.idx);
+  }
+}
+
+/* ---- da LaTeX/HTML a testo semplice per il report ---- */
+function stripMath(s){
+  const par=x=>/^[-]?[\w.]+$/.test(x.trim())?x.trim():"("+x.trim()+")";
+  function clean(t){
+    t=t.replace(/\\left|\\right|\\!|\\,|\\;|\\ /g,"");
+    for(let i=0;i<6&&/\\[dt]?frac\{/.test(t);i++){
+      t=t.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g,(_,n,d)=>par(n)+"/"+par(d));
+    }
+    return t.replace(/\\cdot/g,"·").replace(/\\times/g,"×").replace(/\\div/g,":")
+      .replace(/\\neq/g,"≠").replace(/\\leq/g,"<=").replace(/\\geq/g,">=")
+      .replace(/\\Longleftrightarrow|\\iff/g,"<=>").replace(/\\Rightarrow/g,"=>")
+      .replace(/\\in/g,"∈").replace(/\\mathbb\{([A-Z])\}/g,"$1")
+      .replace(/\\text\{([^{}]*)\}/g,"$1").replace(/\\cancel\{([^{}]*)\}/g,"$1")
+      .replace(/\^\{([^{}]*)\}/g,"^($1)").replace(/_\{([^{}]*)\}/g,"_$1")
+      .replace(/\^(-?\w)/g,"^$1")
+      .replace(/[{}]/g,"").replace(/\\[a-zA-Z]+/g,"").replace(/\s+/g," ").trim();
+  }
+  return String(s).replace(/\$\$?([\s\S]*?)\$\$?/g,(m,inner)=>clean(inner))
+    .replace(/&nbsp;/g," ").replace(/<[^>]+>/g,"").replace(/&rarr;/g,"→")
+    .replace(/&middot;/g,"·").replace(/\s+/g," ").trim();
+}
+function fmtTime(sec){
+  sec=Math.round(sec);
+  const m=Math.floor(sec/60), s=sec%60;
+  return m>0 ? m+" min "+String(s).padStart(2,"0")+" s" : s+" s";
+}
+function fmtMs(ms){
+  if(ms==null)return "—";
+  return (ms/1000).toFixed(1).replace(".",",")+" s";
+}
+
+/* ---- costruzione del report testuale ---- */
+function buildReport(areaId){
+  subAccrue();
+  const area=AREAS.find(a=>a.id===areaId);
+  const qs=QUIZ[areaId]||[], st=QSTATE[areaId];
+  const n=qs.length;
+  const nOk=st.ans.filter((a,i)=>a!==null&&a===qs[i].c).length;
+  const nRisp=st.ans.filter(a=>a!==null).length;
+  const pct=Math.round(nOk/n*100);
+  const L=[];
+  L.push("REPORT QUIZ — Operazioni con le frazioni numeriche");
+  L.push("=".repeat(52));
+  L.push("Studente: "+(SESSION.name||"(non indicato)"));
+  L.push("Data e ora: "+new Date().toLocaleString("it-IT"));
+  L.push("Area del quiz: "+area.title);
+  L.push("Punteggio: "+nOk+" / "+n+"  ("+pct+"%)   —   risposte date: "+nRisp+" / "+n);
+  L.push("");
+  L.push("TEMPO DI PERMANENZA PER SOTTOSCHEDA (intera sessione)");
+  L.push("-".repeat(52));
+  let tot=0;
+  AREAS.forEach(a=>{
+    a.sub.forEach(s=>{
+      const t=SESSION.subtabTime[a.id+"/"+s.id];
+      if(t&&t>=1){ tot+=t; L.push("• "+a.title+" › "+s.label+": "+fmtTime(t)); }
+    });
+  });
+  if(tot===0)L.push("(nessun tempo registrato)");
+  L.push("Totale sessione: "+fmtTime(tot));
+  L.push("");
+  L.push("DETTAGLIO DELLE RISPOSTE — "+area.title);
+  L.push("-".repeat(52));
+  qs.forEach((q,i)=>{
+    const a=st.ans[i];
+    const esito = a===null ? "SENZA RISPOSTA" : (a===q.c ? "CORRETTA" : "ERRATA");
+    const tempo = st.tfinal[i]==null ? "—" : fmtMs(st.tfinal[i]);
+    L.push("");
+    L.push((i+1)+". ["+(q.type==="problema"?"Problema":"Teoria")+"] "+esito+"  (tempo: "+tempo+")");
+    L.push("   Domanda: "+stripMath(q.q));
+    L.push("   Risposta data: "+(a===null?"—":stripMath(q.o[a])));
+    if(a!==q.c) L.push("   Risposta corretta: "+stripMath(q.o[q.c]));
+  });
+  L.push("");
+  L.push("=".repeat(52));
+  L.push("Report generato automaticamente dall'applicazione didattica.");
+  return L.join("\n");
+}
+function slug(s){ return (s||"studente").toLowerCase().normalize("NFD").replace(/[^\w]+/g,"_").replace(/^_|_$/g,""); }
+function sendReportEmail(areaId){
+  const area=AREAS.find(a=>a.id===areaId);
+  const body=buildReport(areaId);
+  const subject="Report quiz "+area.title+" — "+(SESSION.name||"studente");
+  saveSession();
+  window.location.href="mailto:"+DEST_EMAIL+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+}
+function downloadReport(areaId){
+  const body=buildReport(areaId);
+  const blob=new Blob([body],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="report_"+slug(SESSION.name)+"_"+areaId+".txt";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+/* ---- gate del nome ---- */
+function updateStud(){
+  const row=document.getElementById("studRow");
+  document.getElementById("studName").textContent=SESSION.name||"";
+  row.hidden=!SESSION.name;
+}
+function openGate(){
+  gateOpen=true; subAccrue(); watchStop();
+  const g=document.getElementById("gate");
+  const inp=document.getElementById("gateName");
+  document.getElementById("gateErr").hidden=true;
+  inp.value=SESSION.name||"";
+  g.hidden=false;
+  setTimeout(()=>inp.focus(),50);
+}
+function closeGate(){
+  gateOpen=false;
+  document.getElementById("gate").hidden=true;
+  subSince=performance.now();
+  maybeStartWatch();
+}
+function validName(s){
+  return s.trim().split(/\s+/).filter(w=>/[A-Za-zÀ-ÿ'’]/.test(w)).length>=2;
+}
+function initGate(){
+  const form=document.getElementById("gateForm");
+  form.addEventListener("submit",ev=>{
+    ev.preventDefault();
+    const v=document.getElementById("gateName").value.trim().replace(/\s+/g," ");
+    if(!validName(v)){ document.getElementById("gateErr").hidden=false; return; }
+    SESSION.name=v; saveSession(); updateStud(); closeGate();
+  });
+  document.getElementById("studChange").addEventListener("click",openGate);
+}
+
 function shuffle(arr){
   const a=arr.slice();
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}
@@ -2311,8 +2554,11 @@ function newQuizState(areaId){
   QSTATE[areaId]={
     idx:0, done:false,
     perm:qs.map(q=>shuffle(q.o.map((_,i)=>i))),   /* posizione randomizzata a ogni tentativo */
-    ans:qs.map(()=>null)
+    ans:qs.map(()=>null),
+    tacc:qs.map(()=>0),      /* ms accumulati mentre la domanda è visibile e senza risposta */
+    tfinal:qs.map(()=>null)  /* ms impiegati fino alla risposta (fissato al clic) */
   };
+  saveSession();
   return QSTATE[areaId];
 }
 
@@ -2421,6 +2667,8 @@ function render(scroll){
 function renderQuiz(){
   const ar=AREAS[CUR.a], qs=QUIZ[ar.id]||[];
   const st=QSTATE[ar.id]||newQuizState(ar.id);
+  if(!st.tacc)st.tacc=qs.map(()=>0);
+  if(!st.tfinal)st.tfinal=qs.map(()=>null);
   const card=document.createElement("div");card.className="card";
   panel.appendChild(card);
 
@@ -2465,11 +2713,19 @@ function renderQuiz(){
       if(origIdx===given)b.classList.add(given===q.c?"sel-ok":"sel-ko");
       else if(origIdx===q.c)b.classList.add("show-ok");
     }else{
-      b.addEventListener("click",()=>{ st.ans[st.idx]=origIdx; render(false); });
+      b.addEventListener("click",()=>{
+        watchStop();                                  /* accumula l'ultimo tratto di tempo */
+        st.tfinal[st.idx]=st.tacc[st.idx];            /* tempo di risposta fissato: non più modificabile */
+        st.ans[st.idx]=origIdx;
+        saveSession();
+        render(false);
+      });
     }
     opts.appendChild(b);
   });
   card.appendChild(opts);
+  /* avvia il cronometro sul quesito mostrato, se ancora senza risposta */
+  if(!answered) watchStart(ar.id,st.idx);
 
   if(answered){
     const ok=given===q.c;
@@ -2538,6 +2794,27 @@ function renderSummary(card,ar,qs,st){
   });
   card.appendChild(list);
 
+  /* invio del report all'insegnante */
+  const rep=document.createElement("div");rep.className="report-box";
+  rep.innerHTML="<span class='lab'>Invio del report all'insegnante</span>"+
+    "<p>Invia a <strong>"+DEST_EMAIL+"</strong> il resoconto della sessione: nome, tempo di permanenza in ogni sottoscheda, e per questo quiz le domande con le risposte date (corrette o errate) e il tempo impiegato.</p>";
+  const rrow=document.createElement("div");rrow.className="btnrow";
+  const mailBtn=document.createElement("button");
+  mailBtn.className="btn primary";mailBtn.type="button";mailBtn.textContent="Invia report via email";
+  mailBtn.addEventListener("click",()=>{
+    if(!SESSION.name){ openGate(); return; }
+    sendReportEmail(ar.id);
+  });
+  const dlBtn=document.createElement("button");
+  dlBtn.className="btn";dlBtn.type="button";dlBtn.textContent="Scarica report";
+  dlBtn.addEventListener("click",()=>downloadReport(ar.id));
+  rrow.appendChild(mailBtn);rrow.appendChild(dlBtn);
+  rep.appendChild(rrow);
+  const rhint=document.createElement("p");rhint.className="report-hint";
+  rhint.textContent="Il pulsante email apre il tuo programma di posta con il messaggio già pronto: devi solo premere «Invia». Se il dispositivo non ha un programma di posta, usa «Scarica report» e allega il file a una tua email.";
+  rep.appendChild(rhint);
+  card.appendChild(rep);
+
   const row=document.createElement("div");row.className="btnrow";
   const again=document.createElement("button");
   again.className="btn primary";again.type="button";
@@ -2566,14 +2843,29 @@ function applyHash(){
   return true;
 }
 function boot(){
+  loadSession();
+  updateStud();
+  initGate();
   readTheme();
   applyHash();
   render(false);
+  if(!SESSION.name) openGate();
   window.addEventListener("hashchange",()=>{ if(applyHash())render(false); });
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){ subAccrue(); watchStop(); pageVisible=false; }
+    else { pageVisible=true; subSince=performance.now(); maybeStartWatch(); }
+  });
+  window.addEventListener("pagehide",()=>{ subAccrue(); saveSession(); });
+  window.addEventListener("beforeunload",()=>{ subAccrue(); saveSession(); });
+  setInterval(()=>{ subAccrue(); saveSession(); },10000);
 }
 const _render=render;
 render=function(scroll){
+  watchStop();
+  const key=AREAS[CUR.a].id+"/"+AREAS[CUR.a].sub[CUR.s].id;
+  if(key!==subKey) subSwitch(key);
   _render(scroll);
+  saveSession();
   try{history.replaceState(null,"","#"+AREAS[CUR.a].id+"/"+AREAS[CUR.a].sub[CUR.s].id);}catch(e){}
 };
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);
