@@ -2359,6 +2359,10 @@ const QSTATE={};
    8.0 SESSIONE STUDENTE — nome, cronometri, report
    ============================================================ */
 const DEST_EMAIL="ventilii@gmail.com";
+/* Incolla qui, fra i doppi apici, l'URL della Web App di Google Apps Script
+   (finisce con /exec) per attivare la raccolta automatica nel Foglio Google.
+   Se resta vuoto, l'app usa solo email e download del report. */
+const REPORT_ENDPOINT="";
 const SESSION={ name:"", startedAt:new Date().toISOString(), subtabTime:{} };
 
 function loadSession(){
@@ -2490,6 +2494,46 @@ function buildReport(areaId){
   L.push("=".repeat(52));
   L.push("Report generato automaticamente dall'applicazione didattica.");
   return L.join("\n");
+}
+/* ---- dati strutturati per l'invio automatico al Foglio ---- */
+function buildPayload(areaId){
+  subAccrue();
+  const area=AREAS.find(a=>a.id===areaId);
+  const qs=QUIZ[areaId]||[], st=QSTATE[areaId];
+  const n=qs.length;
+  const nOk=st.ans.filter((a,i)=>a!==null&&a===qs[i].c).length;
+  const nRisp=st.ans.filter(a=>a!==null).length;
+  let tot=0; const subs=[];
+  AREAS.forEach(a=>a.sub.forEach(s=>{
+    const t=SESSION.subtabTime[a.id+"/"+s.id];
+    if(t&&t>=1){ tot+=t; subs.push({area:a.title, sottoscheda:s.label, secondi:Math.round(t)}); }
+  }));
+  const domande=qs.map((q,i)=>{
+    const a=st.ans[i];
+    return {
+      n:i+1, tipo:q.type==="problema"?"Problema":"Teoria",
+      esito: a===null?"senza risposta":(a===q.c?"corretta":"errata"),
+      tempoSecondi: st.tfinal[i]==null?null:+(st.tfinal[i]/1000).toFixed(1),
+      domanda: stripMath(q.q),
+      rispostaData: a===null?"":stripMath(q.o[a]),
+      rispostaCorretta: stripMath(q.o[q.c])
+    };
+  });
+  return {
+    nome:SESSION.name, area:area.title, areaId:areaId,
+    corrette:nOk, totale:n, percentuale:Math.round(nOk/n*100), risposteDate:nRisp,
+    tempoSessioneSecondi:Math.round(tot),
+    sottoschede:subs, domande:domande,
+    report:buildReport(areaId), inviatoIl:new Date().toISOString()
+  };
+}
+function postReport(areaId){
+  const payload=buildPayload(areaId);
+  return fetch(REPORT_ENDPOINT,{
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(payload)
+  });
 }
 function slug(s){ return (s||"studente").toLowerCase().normalize("NFD").replace(/[^\w]+/g,"_").replace(/^_|_$/g,""); }
 function sendReportEmail(areaId){
@@ -2795,24 +2839,49 @@ function renderSummary(card,ar,qs,st){
   card.appendChild(list);
 
   /* invio del report all'insegnante */
+  const online = !!REPORT_ENDPOINT;
   const rep=document.createElement("div");rep.className="report-box";
   rep.innerHTML="<span class='lab'>Invio del report all'insegnante</span>"+
-    "<p>Invia a <strong>"+DEST_EMAIL+"</strong> il resoconto della sessione: nome, tempo di permanenza in ogni sottoscheda, e per questo quiz le domande con le risposte date (corrette o errate) e il tempo impiegato.</p>";
+    "<p>"+(online
+      ? "Invia all'insegnante il resoconto della sessione: nome, tempo di permanenza in ogni sottoscheda, e per questo quiz le domande con le risposte date (corrette o errate) e il tempo impiegato."
+      : "Invia a <strong>"+DEST_EMAIL+"</strong> il resoconto della sessione: nome, tempo di permanenza in ogni sottoscheda, e per questo quiz le domande con le risposte date (corrette o errate) e il tempo impiegato.")+"</p>";
   const rrow=document.createElement("div");rrow.className="btnrow";
-  const mailBtn=document.createElement("button");
-  mailBtn.className="btn primary";mailBtn.type="button";mailBtn.textContent="Invia report via email";
-  mailBtn.addEventListener("click",()=>{
-    if(!SESSION.name){ openGate(); return; }
-    sendReportEmail(ar.id);
-  });
-  const dlBtn=document.createElement("button");
-  dlBtn.className="btn";dlBtn.type="button";dlBtn.textContent="Scarica report";
-  dlBtn.addEventListener("click",()=>downloadReport(ar.id));
-  rrow.appendChild(mailBtn);rrow.appendChild(dlBtn);
-  rep.appendChild(rrow);
-  const rhint=document.createElement("p");rhint.className="report-hint";
-  rhint.textContent="Il pulsante email apre il tuo programma di posta con il messaggio già pronto: devi solo premere «Invia». Se il dispositivo non ha un programma di posta, usa «Scarica report» e allega il file a una tua email.";
-  rep.appendChild(rhint);
+
+  if(online){
+    const sendBtn=document.createElement("button");
+    sendBtn.className="btn primary";sendBtn.type="button";sendBtn.textContent="Invia report all'insegnante";
+    const status=document.createElement("span");
+    status.style.cssText="font-family:ui-sans-serif,system-ui,sans-serif;font-size:.85rem;font-weight:600;align-self:center";
+    sendBtn.addEventListener("click",()=>{
+      if(!SESSION.name){ openGate(); return; }
+      sendBtn.disabled=true; status.style.color="var(--muted)"; status.textContent="Invio in corso…";
+      saveSession();
+      postReport(ar.id)
+        .then(()=>{ status.style.color="var(--ok)"; status.textContent="Report inviato. Grazie!"; })
+        .catch(()=>{ sendBtn.disabled=false; status.style.color="var(--warn)";
+          status.textContent="Invio non riuscito: controlla la connessione o usa «Scarica report»."; });
+    });
+    const dlBtn=document.createElement("button");
+    dlBtn.className="btn";dlBtn.type="button";dlBtn.textContent="Scarica report";
+    dlBtn.addEventListener("click",()=>downloadReport(ar.id));
+    rrow.appendChild(sendBtn);rrow.appendChild(dlBtn);
+    rep.appendChild(rrow);rep.appendChild(status);
+    const rhint=document.createElement("p");rhint.className="report-hint";
+    rhint.textContent="Premi «Invia report all'insegnante»: il resoconto viene registrato automaticamente. In caso di problemi di rete, usa «Scarica report» come riserva.";
+    rep.appendChild(rhint);
+  }else{
+    const mailBtn=document.createElement("button");
+    mailBtn.className="btn primary";mailBtn.type="button";mailBtn.textContent="Invia report via email";
+    mailBtn.addEventListener("click",()=>{ if(!SESSION.name){ openGate(); return; } sendReportEmail(ar.id); });
+    const dlBtn=document.createElement("button");
+    dlBtn.className="btn";dlBtn.type="button";dlBtn.textContent="Scarica report";
+    dlBtn.addEventListener("click",()=>downloadReport(ar.id));
+    rrow.appendChild(mailBtn);rrow.appendChild(dlBtn);
+    rep.appendChild(rrow);
+    const rhint=document.createElement("p");rhint.className="report-hint";
+    rhint.textContent="Il pulsante email apre il tuo programma di posta con il messaggio già pronto: devi solo premere «Invia». Se il dispositivo non ha un programma di posta, usa «Scarica report» e allega il file a una tua email.";
+    rep.appendChild(rhint);
+  }
   card.appendChild(rep);
 
   const row=document.createElement("div");row.className="btnrow";
