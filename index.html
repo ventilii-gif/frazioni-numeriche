@@ -13,51 +13,51 @@
    Nessuna coppia rosso-verde (feedback: teal = corretto, ambra = da rivedere).
    ============================================================ */
 :root{
-  --bg:#f4f1e8;
-  --bg-2:#ebe6d9;
-  --surface:#fffdf7;
-  --surface-2:#f7f3e9;
-  --ink:#1d1b17;
-  --ink-soft:#4a453c;
-  --muted:#6d675b;
-  --line:#d9d2c2;
-  --line-strong:#bdb4a0;
-  --accent:#4c3fb5;
-  --accent-soft:#e6e3f8;
-  --accent-ink:#3a2f96;
-  --fa:#0d7f96;          /* frazione A */
-  --fa-soft:#d8eef2;
-  --fb:#b06a12;          /* frazione B */
-  --fb-soft:#f7e9d3;
-  --ok:#186b41;          /* risposta corretta: verde, distinto dal ciano/ambra delle frazioni */
-  --ok-soft:#dcf0e3;
-  --warn:#b06a12;
-  --warn-soft:#f7e9d3;
-  --shadow:0 1px 2px rgba(30,26,18,.06), 0 8px 24px rgba(30,26,18,.07);
+  --bg:#faf9f6;
+  --bg-2:#f0ede4;
+  --surface:#ffffff;
+  --surface-2:#f4f1e9;
+  --ink:#1f2933;
+  --ink-soft:#3d4a57;
+  --muted:#5a6b7b;
+  --line:#dfe3e8;
+  --line-strong:#c5ccd4;
+  --accent:#1d4e89;
+  --accent-soft:#e7f0fa;
+  --accent-ink:#12314f;
+  --fa:#3b7dc4;          /* frazione A */
+  --fa-soft:#e2eef8;
+  --fb:#c9752a;          /* frazione B */
+  --fb-soft:#faf0e3;
+  --ok:#1d4e89;          /* risposta corretta: verde, distinto dal ciano/ambra delle frazioni */
+  --ok-soft:#e7f0fa;
+  --warn:#c9752a;
+  --warn-soft:#faf0e3;
+  --shadow:0 1px 2px rgba(18,49,79,.06), 0 8px 24px rgba(18,49,79,.07);
   --radius:14px;
   --maxw:1080px;
 }
 html[data-theme="dark"]{
-  --bg:#12141a;
-  --bg-2:#0d0f14;
-  --surface:#1a1d25;
-  --surface-2:#20242e;
-  --ink:#e7e4dc;
-  --ink-soft:#c3bfb5;
-  --muted:#948f85;
-  --line:#2c313d;
-  --line-strong:#3b4250;
-  --accent:#9d90ee;
-  --accent-soft:#262340;
-  --accent-ink:#b8aef5;
-  --fa:#5fbdd0;
-  --fa-soft:#16323a;
-  --fb:#dda45f;
-  --fb-soft:#392c17;
-  --ok:#5fcf8e;
-  --ok-soft:#163a26;
-  --warn:#dda45f;
-  --warn-soft:#392c17;
+  --bg:#0f1621;
+  --bg-2:#0b111a;
+  --surface:#18222e;
+  --surface-2:#1e2836;
+  --ink:#e6eaf0;
+  --ink-soft:#adb8c5;
+  --muted:#98a6b6;
+  --line:#2a3a4c;
+  --line-strong:#3a4a5c;
+  --accent:#3b82c9;
+  --accent-soft:#15273a;
+  --accent-ink:#cfe0f1;
+  --fa:#6aa0da;
+  --fa-soft:#15273a;
+  --fb:#d68a44;
+  --fb-soft:#382718;
+  --ok:#6aa0da;
+  --ok-soft:#15273a;
+  --warn:#d68a44;
+  --warn-soft:#382718;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
 }
 *{box-sizing:border-box}
@@ -184,7 +184,7 @@ nav.main{background:var(--surface);border-bottom:1px solid var(--line)}
 }
 .subtab:hover{color:var(--ink);border-color:var(--accent)}
 .subtab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
-html[data-theme="dark"] .subtab[aria-selected="true"]{color:#14121f}
+html[data-theme="dark"] .subtab[aria-selected="true"]{color:#0f1621}
 .subtab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 /* ---------- CONTENUTO ---------- */
@@ -221,9 +221,9 @@ th{background:var(--surface-2);font-family:ui-sans-serif,system-ui,sans-serif;fo
 .btn:hover{border-color:var(--accent);color:var(--accent-ink)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-html[data-theme="dark"] .btn.primary{color:#14121f}
+html[data-theme="dark"] .btn.primary{color:#0f1621}
 .btn.primary:hover{filter:brightness(1.08);color:#fff}
-html[data-theme="dark"] .btn.primary:hover{color:#14121f}
+html[data-theme="dark"] .btn.primary:hover{color:#0f1621}
 .btn:disabled{opacity:.42;cursor:not-allowed}
 .btnrow{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin:.6em 0}
 
@@ -513,7 +513,7 @@ function readTheme(){
 function applyTheme(t,origin){
   const root=document.documentElement;
   const sweep=document.getElementById("sweep");
-  const next=t==="dark"?"#12141a":"#f4f1e8";
+  const next=t==="dark"?"#0f1621":"#faf9f6";
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const set=()=>{
     root.setAttribute("data-theme",t);
@@ -2062,121 +2062,121 @@ $$ \\dfrac{\\ \\frac{1}{2}+\\frac{1}{3}\\ }{\\ \\frac{5}{6}\\ }=\\left(\\frac{1\
    l'ordine delle opzioni viene rimescolato a ogni tentativo.
    ============================================================ */
 const QUIZ={
-semplificazione:[
+semplificazione: [
  {q:"Due frazioni $\\frac{a}{b}$ e $\\frac{c}{d}$ rappresentano lo stesso numero razionale se e solo se:",
   o:["$ad=bc$","$a+d=b+c$","$a=c$ e $b=d$","$a-b=c-d$"],c:0,
   w:"Il criterio di equivalenza è $ad=bc$. Due frazioni possono avere termini diversi e valere lo stesso: $\\frac{1}{2}$ e $\\frac{3}{6}$ sono equivalenti perché $1\\cdot6=2\\cdot3$."},
  {q:"Moltiplicando numeratore e denominatore per uno stesso numero $k\\neq0$, il valore della frazione:",
-  o:["non cambia","raddoppia","viene moltiplicato per $k$","cambia solo se $k$ è negativo"],c:0,
+  o:["raddoppia","non cambia","viene moltiplicato per $k$","cambia solo se $k$ è negativo"],c:1,
   w:"È la proprietà invariantiva: $\\frac{a}{b}=\\frac{ak}{bk}$. Cambia la scrittura, non il numero rappresentato. La condizione $k\\neq0$ serve perché $\\frac{0}{0}$ non è una frazione."},
  {q:"Una frazione è ridotta ai minimi termini quando:",
-  o:["$\\mathrm{MCD}(|a|,|b|)=1$","il numeratore è minore del denominatore","il denominatore è un numero primo","$\\mathrm{mcm}(a,b)=ab$"],c:0,
+  o:["il numeratore è minore del denominatore","il denominatore è un numero primo","$\\mathrm{mcm}(a,b)=ab$","$\\mathrm{MCD}(|a|,|b|)=1$"],c:3,
   w:"Irriducibile significa che numeratore e denominatore sono coprimi. Non c'entra la grandezza relativa: $\\frac{7}{4}$ è già ridotta pur avendo numeratore maggiore."},
  {q:"Per ridurre una frazione ai minimi termini con un solo passaggio si divide numeratore e denominatore per:",
-  o:["il loro MCD","il loro mcm","il numeratore","il denominatore"],c:0,
+  o:["il loro mcm","il numeratore","il denominatore","il loro MCD"],c:3,
   w:"Dividendo per il massimo comune divisore si eliminano in un colpo solo tutti i fattori comuni. Il mcm serve invece a sommare, non a semplificare."},
  {q:"La scrittura $\\frac{-3}{-4}$ è uguale a:",
-  o:["$\\frac{3}{4}$","$-\\frac{3}{4}$","$-\\frac{4}{3}$","non è una frazione"],c:0,
+  o:["$-\\frac{3}{4}$","$-\\frac{4}{3}$","$\\frac{3}{4}$","non è una frazione"],c:2,
   w:"Due segni negativi si elidono, quindi $\\frac{-3}{-4}=\\frac{3}{4}$. Per convenzione il denominatore si scrive positivo e l'eventuale segno si porta davanti alla linea."},
  {q:"In $\\frac{2+3}{5+3}$ si può «cancellare» il 3?",
-  o:["No, perché è un addendo e non un fattore","Sì, dividendo entrambi per 3","Sì, ma solo al numeratore","Sì, perché compare sopra e sotto"],c:0,
+  o:["Sì, dividendo entrambi per 3","Sì, ma solo al numeratore","Sì, perché compare sopra e sotto","No, perché è un addendo e non un fattore"],c:3,
   w:"La proprietà invariantiva riguarda moltiplicazione e divisione, quindi i fattori. Qui va eseguita prima la somma: $\\frac{5}{8}$. Cancellando il 3 si otterrebbe $\\frac{2}{5}$, che è un numero diverso."},
  {q:"Quante rappresentazioni ridotte con denominatore positivo ammette un numero razionale?",
   o:["Esattamente una","Nessuna","Infinite","Due, opposte fra loro"],c:0,
   w:"È il teorema di unicità della forma canonica. Le rappresentazioni non ridotte sono invece infinite: $\\frac{1}{2},\\frac{2}{4},\\frac{3}{6},\\dots$"},
  {q:"Una frazione si dice apparente quando:",
-  o:["il numeratore è multiplo del denominatore","il numeratore è minore del denominatore","numeratore e denominatore sono coprimi","il denominatore vale 0"],c:0,
+  o:["il numeratore è minore del denominatore","numeratore e denominatore sono coprimi","il numeratore è multiplo del denominatore","il denominatore vale 0"],c:2,
   w:"Una frazione apparente è la scrittura frazionaria di un intero: $\\frac{12}{4}=3$. Se invece $|a|<|b|$ la frazione si dice propria."},
  {q:"Se $a=0$ e $b\\neq0$, la forma canonica di $\\frac{a}{b}$ è:",
-  o:["$\\frac{0}{1}$","$\\frac{0}{b}$","$\\frac{1}{0}$","non esiste"],c:0,
+  o:["$\\frac{0}{b}$","$\\frac{0}{1}$","$\\frac{1}{0}$","non esiste"],c:1,
   w:"$\\frac{0}{b}=0$ per ogni $b\\neq0$, e la forma canonica ha denominatore 1. Attenzione a non confondere: $\\frac{1}{0}$ non è una frazione, perché il denominatore non può annullarsi."},
  {q:"Semplificare una frazione:",
-  o:["cambia i termini ma non il numero rappresentato","cambia il numero rappresentato","è possibile solo con denominatore pari","richiede il calcolo del mcm"],c:0,
+  o:["cambia il numero rappresentato","cambia i termini ma non il numero rappresentato","è possibile solo con denominatore pari","richiede il calcolo del mcm"],c:1,
   w:"Si passa semplicemente a un altro rappresentante della stessa classe di equivalenza. Il valore resta identico: è il senso stesso della proprietà invariantiva."},
  {q:"Riduci ai minimi termini $\\frac{84}{126}$.",
-  o:["$\\frac{2}{3}$","$\\frac{3}{4}$","$\\frac{7}{9}$","$\\frac{6}{7}$"],c:0,type:"problema",
+  o:["$\\frac{3}{4}$","$\\frac{7}{9}$","$\\frac{2}{3}$","$\\frac{6}{7}$"],c:2,
   w:"$84=2^2\\cdot3\\cdot7$ e $126=2\\cdot3^2\\cdot7$, quindi $\\mathrm{MCD}=2\\cdot3\\cdot7=42$: $84:42=2$ e $126:42=3$, cioè $\\frac{2}{3}$."},
  {q:"Quanto vale $\\mathrm{MCD}(72,120)$?",
-  o:["24","12","8","360"],c:0,type:"problema",
+  o:["24","12","8","360"],c:0,
   w:"$72=2^3\\cdot3^2$ e $120=2^3\\cdot3\\cdot5$: si prendono i fattori comuni con l'esponente minore, $2^3\\cdot3=24$. Il valore 360 è invece il mcm."},
  {q:"Riduci ai minimi termini $\\frac{210}{462}$.",
-  o:["$\\frac{5}{11}$","$\\frac{10}{21}$","$\\frac{7}{15}$","$\\frac{5}{12}$"],c:0,type:"problema",
+  o:["$\\frac{5}{11}$","$\\frac{10}{21}$","$\\frac{7}{15}$","$\\frac{5}{12}$"],c:0,
   w:"$210=2\\cdot3\\cdot5\\cdot7$ e $462=2\\cdot3\\cdot7\\cdot11$: il MCD è $2\\cdot3\\cdot7=42$, e resta $\\frac{5}{11}$."},
  {q:"Scrivi $\\frac{-18}{24}$ in forma canonica.",
-  o:["$-\\frac{3}{4}$","$\\frac{3}{4}$","$-\\frac{4}{3}$","$-\\frac{6}{8}$"],c:0,type:"problema",
+  o:["$\\frac{3}{4}$","$-\\frac{3}{4}$","$-\\frac{4}{3}$","$-\\frac{6}{8}$"],c:1,
   w:"$\\mathrm{MCD}(18,24)=6$, quindi si ottiene $-\\frac{3}{4}$. La scrittura $-\\frac{6}{8}$ vale lo stesso numero ma non è ridotta ai minimi termini."},
  {q:"Per quale intero $k$ vale $\\frac{k}{45}=\\frac{4}{9}$?",
-  o:["20","5","16","36"],c:0,type:"problema",
+  o:["5","16","20","36"],c:2,
   w:"Da $9k=45\\cdot4=180$ segue $k=20$. In alternativa: $45=9\\cdot5$, quindi anche il numeratore va moltiplicato per 5, cioè $4\\cdot5=20$."}
-],
-addizione:[
+ ],
+addizione: [
  {q:"Con lo stesso denominatore, $\\frac{a}{c}+\\frac{b}{c}$ vale:",
-  o:["$\\frac{a+b}{c}$","$\\frac{a+b}{2c}$","$\\frac{a+b}{c+c}$","$\\frac{ab}{c}$"],c:0,
+  o:["$\\frac{a+b}{2c}$","$\\frac{a+b}{c}$","$\\frac{a+b}{c+c}$","$\\frac{ab}{c}$"],c:1,
   w:"Il denominatore dichiara in quante parti è diviso l'intero, e quella suddivisione non cambia: si contano soltanto le parti. Tre quinti più un quinto fanno quattro quinti, non quattro decimi."},
  {q:"La definizione generale della somma è $\\frac{a}{b}+\\frac{c}{d}=$",
-  o:["$\\frac{ad+bc}{bd}$","$\\frac{a+c}{b+d}$","$\\frac{ab+cd}{bd}$","$\\frac{ad+bc}{b+d}$"],c:0,
+  o:["$\\frac{a+c}{b+d}$","$\\frac{ab+cd}{bd}$","$\\frac{ad+bc}{b+d}$","$\\frac{ad+bc}{bd}$"],c:3,
   w:"Si porta tutto sul denominatore comune $bd$: $\\frac{a}{b}=\\frac{ad}{bd}$ e $\\frac{c}{d}=\\frac{bc}{bd}$, e a quel punto i numeratori si sommano."},
  {q:"Perché conviene usare il mcm dei denominatori invece del loro prodotto?",
   o:["Porta allo stesso risultato ma con numeri più piccoli","Perché con il prodotto il risultato è errato","Perché solo il mcm rende l'operazione ben definita","Perché il prodotto non è mai un denominatore comune"],c:0,
   w:"Il prodotto $bd$ è sempre un denominatore comune valido e conduce alla stessa classe di equivalenza. Il mcm è solo più economico: evita di dover semplificare numeri grandi alla fine."},
  {q:"L'elemento neutro dell'addizione in $\\mathbb{Q}$ è:",
-  o:["$0$","$1$","$\\frac{1}{2}$","non esiste"],c:0,
+  o:["$1$","$0$","$\\frac{1}{2}$","non esiste"],c:1,
   w:"$\\frac{a}{b}+0=\\frac{a}{b}$. L'elemento neutro 1 è invece quello della moltiplicazione: sono ruoli diversi in operazioni diverse."},
  {q:"L'opposto di $\\frac{a}{b}$ è:",
-  o:["$-\\frac{a}{b}$","$\\frac{b}{a}$","$0$","$\\frac{a}{b}$ stesso"],c:0,
+  o:["$\\frac{b}{a}$","$0$","$-\\frac{a}{b}$","$\\frac{a}{b}$ stesso"],c:2,
   w:"L'opposto è ciò che sommato dà 0, cioè $-\\frac{a}{b}$. Il reciproco $\\frac{b}{a}$ è invece ciò che moltiplicato dà 1: due concetti da non confondere."},
  {q:"La sottrazione fra numeri razionali:",
-  o:["è la somma dell'opposto e non è commutativa","è commutativa come l'addizione","è associativa","è definita solo se il primo termine è maggiore"],c:0,
+  o:["è commutativa come l'addizione","è la somma dell'opposto e non è commutativa","è associativa","è definita solo se il primo termine è maggiore"],c:1,
   w:"Si definisce $x-y=x+(-y)$. In $\\mathbb{Q}$ il risultato esiste sempre, anche quando è negativo: è proprio ciò che distingue $\\mathbb{Q}$ dall'insieme dei soli numeri positivi."},
  {q:"Sostituendo gli addendi con frazioni a essi equivalenti, la somma:",
-  o:["risulta equivalente a quella di partenza","risulta diversa","resta scritta identica","diventa irriducibile"],c:0,
+  o:["risulta diversa","resta scritta identica","risulta equivalente a quella di partenza","diventa irriducibile"],c:2,
   w:"È la proprietà di buona definizione: l'operazione agisce sulle classi di equivalenza, quindi il risultato non dipende dal rappresentante scelto. La scrittura può cambiare, il numero no."},
  {q:"Il numero misto $2\\frac{1}{3}$ equivale a:",
-  o:["$\\frac{7}{3}$","$\\frac{2}{3}$","$\\frac{6}{3}$","$\\frac{3}{7}$"],c:0,
+  o:["$\\frac{2}{3}$","$\\frac{6}{3}$","$\\frac{3}{7}$","$\\frac{7}{3}$"],c:3,
   w:"La scrittura significa $2+\\frac{1}{3}=\\frac{6}{3}+\\frac{1}{3}=\\frac{7}{3}$. Nel calcolo algebrico conviene convertirla subito, perché l'accostamento di due numeri di solito indica un prodotto."},
  {q:"Sommando due frazioni positive, il risultato è:",
-  o:["maggiore di ciascuno dei due addendi","minore di entrambi","sempre minore di 1","sempre maggiore di 1"],c:0,
+  o:["minore di entrambi","sempre minore di 1","maggiore di ciascuno dei due addendi","sempre maggiore di 1"],c:2,
   w:"Aggiungere una quantità positiva fa crescere il valore. È il comportamento opposto a quello del prodotto di due frazioni comprese fra 0 e 1, che risulta invece minore di entrambe."},
  {q:"L'operazione «in orizzontale» $\\frac{a+c}{b+d}$ applicata a $\\frac{1}{2}$ e $\\frac{1}{3}$:",
-  o:["non è l'addizione: dà un valore compreso fra le due frazioni","coincide con l'addizione","è l'addizione solo se $b=d$","non è mai definita"],c:0,
+  o:["coincide con l'addizione","è l'addizione solo se $b=d$","non è mai definita","non è l'addizione: dà un valore compreso fra le due frazioni"],c:3,
   w:"Dà $\\frac{2}{5}$, che sta fra $\\frac{1}{3}$ e $\\frac{1}{2}$, mentre la somma vale $\\frac{5}{6}$. È un'operazione con un suo significato (la mediante), ma non è l'addizione."},
  {q:"Calcola $\\frac{2}{3}+\\frac{1}{4}$.",
-  o:["$\\frac{11}{12}$","$\\frac{3}{7}$","$\\frac{3}{12}$","$\\frac{11}{24}$"],c:0,type:"problema",
+  o:["$\\frac{11}{12}$","$\\frac{3}{7}$","$\\frac{3}{12}$","$\\frac{11}{24}$"],c:0,
   w:"$m=\\mathrm{mcm}(3,4)=12$: $\\frac{2\\cdot 4+1\\cdot 3}{12}=\\frac{8+3}{12}=\\frac{11}{12}$. La risposta $\\frac{3}{7}$ nasce dal sommare numeratori e denominatori separatamente, che non è l'addizione."},
  {q:"Calcola $\\frac{5}{6}-\\frac{3}{8}$.",
-  o:["$\\frac{11}{24}$","$\\frac{1}{12}$","$\\frac{7}{24}$","$\\frac{11}{48}$"],c:0,type:"problema",
+  o:["$\\frac{1}{12}$","$\\frac{11}{24}$","$\\frac{7}{24}$","$\\frac{11}{48}$"],c:1,
   w:"$m=\\mathrm{mcm}(6,8)=24$: $\\frac{5\\cdot 4-3\\cdot 3}{24}=\\frac{20-9}{24}=\\frac{11}{24}$. Il valore $\\frac{11}{48}$ si ottiene usando come denominatore il prodotto $48$ ma dimenticando di adeguare i numeratori."},
  {q:"Calcola $\\frac{3}{10}+\\frac{7}{15}$.",
-  o:["$\\frac{23}{30}$","$\\frac{10}{25}$","$\\frac{23}{60}$","$\\frac{21}{30}$"],c:0,type:"problema",
+  o:["$\\frac{23}{30}$","$\\frac{10}{25}$","$\\frac{23}{60}$","$\\frac{21}{30}$"],c:0,
   w:"$m=\\mathrm{mcm}(10,15)=30$ ($30:10=3$, $30:15=2$): $\\frac{3\\cdot 3+7\\cdot 2}{30}=\\frac{9+14}{30}=\\frac{23}{30}$, già ridotta perché 23 è primo e non divide 30."},
  {q:"Calcola $\\frac{1}{2}+\\frac{1}{3}+\\frac{1}{6}$.",
-  o:["$1$","$\\frac{3}{11}$","$\\frac{5}{6}$","$\\frac{11}{6}$"],c:0,type:"problema",
+  o:["$1$","$\\frac{3}{11}$","$\\frac{5}{6}$","$\\frac{11}{6}$"],c:0,
   w:"Con $m=\\mathrm{mcm}(2,3,6)=6$: $\\frac{1\\cdot 3+1\\cdot 2+1\\cdot 1}{6}=\\frac{3+2+1}{6}=\\frac{6}{6}=1$. Conviene un'unica frazione con tutti gli addendi al numeratore, non calcoli a coppie."},
  {q:"Determina $x$ tale che $\\frac{3}{10}+x=\\frac{4}{5}$.",
-  o:["$\\frac{1}{2}$","$\\frac{11}{10}$","$\\frac{1}{5}$","$\\frac{1}{10}$"],c:0,type:"problema",
+  o:["$\\frac{11}{10}$","$\\frac{1}{5}$","$\\frac{1}{2}$","$\\frac{1}{10}$"],c:2,
   w:"$x=\\frac{4}{5}-\\frac{3}{10}=\\frac{4\\cdot 2-3\\cdot 1}{10}=\\frac{8-3}{10}=\\frac{5}{10}=\\frac{1}{2}$. Il valore $\\frac{11}{10}$ si ottiene sommando invece di sottrarre."}
-],
-moltiplicazione:[
+ ],
+moltiplicazione: [
  {q:"Il prodotto $\\frac{a}{b}\\cdot\\frac{c}{d}$ vale:",
   o:["$\\frac{ac}{bd}$","$\\frac{a+c}{b+d}$","$\\frac{ad}{bc}$","$\\frac{ac}{b+d}$"],c:0,
   w:"Si moltiplicano fra loro i numeratori e fra loro i denominatori. La forma $\\frac{ad}{bc}$ è invece il risultato della divisione."},
  {q:"L'espressione «i due terzi dei tre quarti» si traduce con:",
-  o:["$\\frac{2}{3}\\cdot\\frac{3}{4}$","$\\frac{2}{3}+\\frac{3}{4}$","$\\frac{2}{3}\\div\\frac{3}{4}$","$\\frac{3}{4}-\\frac{2}{3}$"],c:0,
+  o:["$\\frac{2}{3}+\\frac{3}{4}$","$\\frac{2}{3}\\div\\frac{3}{4}$","$\\frac{2}{3}\\cdot\\frac{3}{4}$","$\\frac{3}{4}-\\frac{2}{3}$"],c:2,
   w:"La preposizione «di» traduce la moltiplicazione: si prende una frazione di una frazione. Il risultato è $\\frac{6}{12}=\\frac{1}{2}$."},
  {q:"Il prodotto di due frazioni entrambe comprese fra 0 e 1 è:",
-  o:["minore di entrambe","maggiore di entrambe","compreso fra le due","sempre uguale a 1"],c:0,
+  o:["maggiore di entrambe","compreso fra le due","sempre uguale a 1","minore di entrambe"],c:3,
   w:"Moltiplicare per un numero minore di 1 rimpicciolisce: $\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$, minore sia di $\\frac{1}{2}$ sia di $\\frac{1}{3}$. Moltiplicare non significa necessariamente ingrandire."},
  {q:"Il reciproco di $\\frac{a}{b}$, con $a\\neq0$, è:",
-  o:["$\\frac{b}{a}$","$-\\frac{a}{b}$","$\\frac{1}{ab}$","$\\frac{a}{b}$"],c:0,
+  o:["$-\\frac{a}{b}$","$\\frac{b}{a}$","$\\frac{1}{ab}$","$\\frac{a}{b}$"],c:1,
   w:"Il reciproco è ciò che moltiplicato dà 1: $\\frac{a}{b}\\cdot\\frac{b}{a}=\\frac{ab}{ab}=1$. L'esistenza del reciproco per ogni elemento non nullo è ciò che distingue $\\mathbb{Q}$ da $\\mathbb{Z}$."},
  {q:"La semplificazione «incrociata» prima di moltiplicare è lecita perché:",
-  o:["il prodotto è un'unica frazione $\\frac{ac}{bd}$ e si semplificano i suoi fattori","è una convenzione pratica senza giustificazione","vale solo se i numeri sono primi","vale allo stesso modo anche nell'addizione"],c:0,
+  o:["è una convenzione pratica senza giustificazione","vale solo se i numeri sono primi","il prodotto è un'unica frazione $\\frac{ac}{bd}$ e si semplificano i suoi fattori","vale allo stesso modo anche nell'addizione"],c:2,
   w:"Una volta scritto il prodotto come unica frazione, ogni fattore del numeratore può essere semplificato con ogni fattore del denominatore. Nell'addizione questo non accade: i numeratori restano addendi."},
  {q:"Il prodotto di due frazioni è nullo:",
   o:["se e solo se almeno un fattore è nullo","solo se entrambi i fattori sono nulli","se i denominatori sono uguali","mai"],c:0,
   w:"È la legge di annullamento del prodotto, valida in $\\mathbb{Q}$. Se $\\frac{ac}{bd}=0$ allora $ac=0$, e quindi $a=0$ oppure $c=0$."},
  {q:"La proprietà distributiva afferma che $\\frac{a}{b}\\left(\\frac{c}{d}+\\frac{e}{f}\\right)$ è uguale a:",
-  o:["$\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{a}{b}\\cdot\\frac{e}{f}$","$\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{e}{f}$","$\\left(\\frac{a}{b}+\\frac{c}{d}\\right)\\cdot\\frac{e}{f}$","$\\frac{a}{b}+\\frac{c}{d}\\cdot\\frac{e}{f}$"],c:0,
+  o:["$\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{e}{f}$","$\\left(\\frac{a}{b}+\\frac{c}{d}\\right)\\cdot\\frac{e}{f}$","$\\frac{a}{b}\\cdot\\frac{c}{d}+\\frac{a}{b}\\cdot\\frac{e}{f}$","$\\frac{a}{b}+\\frac{c}{d}\\cdot\\frac{e}{f}$"],c:2,
   w:"Il fattore esterno moltiplica ciascun addendo della parentesi. È la proprietà che collega addizione e moltiplicazione e che si usa continuamente nel calcolo letterale."},
  {q:"Moltiplicare una frazione per un intero $n$ significa:",
   o:["moltiplicare per $n$ soltanto il numeratore","moltiplicare per $n$ numeratore e denominatore","moltiplicare per $n$ soltanto il denominatore","aggiungere $n$ al numeratore"],c:0,
@@ -2185,74 +2185,74 @@ moltiplicazione:[
   o:["positivo","negativo","nullo","dipende dai denominatori"],c:0,
   w:"Valgono le regole dei segni degli interi: segni concordi danno prodotto positivo, segni discordi prodotto negativo."},
  {q:"Nel modello ad area, il denominatore del prodotto rappresenta:",
-  o:["il numero totale di celle della griglia","il numero di celle comuni","il numero di righe soltanto","l'area della regione comune"],c:0,
+  o:["il numero di celle comuni","il numero totale di celle della griglia","il numero di righe soltanto","l'area della regione comune"],c:1,
   w:"La griglia ha $b\\cdot d$ celle uguali (il denominatore) e la regione comune ne contiene $a\\cdot c$ (il numeratore): da qui $\\frac{ac}{bd}$."},
  {q:"Calcola $\\frac{3}{4}\\cdot\\frac{2}{9}$.",
-  o:["$\\frac{1}{6}$","$\\frac{3}{8}$","$\\frac{27}{8}$","$\\frac{5}{13}$"],c:0,type:"problema",
+  o:["$\\frac{3}{8}$","$\\frac{1}{6}$","$\\frac{27}{8}$","$\\frac{5}{13}$"],c:1,
   w:"Semplificando prima: 3 con 9 e 2 con 4, resta $\\frac{1}{2}\\cdot\\frac{1}{3}=\\frac{1}{6}$. Lo stesso risultato si ottiene da $\\frac{6}{36}$ riducendo alla fine."},
  {q:"Calcola $\\frac{5}{8}\\cdot\\frac{12}{25}$.",
-  o:["$\\frac{3}{10}$","$\\frac{3}{5}$","$\\frac{17}{33}$","$\\frac{5}{24}$"],c:0,type:"problema",
+  o:["$\\frac{3}{5}$","$\\frac{17}{33}$","$\\frac{5}{24}$","$\\frac{3}{10}$"],c:3,
   w:"Semplificazione a croce: 5 con 25 (resta 5 al denominatore) e 12 con 8 (restano 3 e 2): $\\frac{1\\cdot3}{2\\cdot5}=\\frac{3}{10}$."},
  {q:"Calcola $\\left(-\\frac{4}{7}\\right)\\cdot\\frac{21}{8}$.",
-  o:["$-\\frac{3}{2}$","$\\frac{3}{2}$","$-\\frac{2}{3}$","$-\\frac{7}{6}$"],c:0,type:"problema",
+  o:["$\\frac{3}{2}$","$-\\frac{2}{3}$","$-\\frac{3}{2}$","$-\\frac{7}{6}$"],c:2,
   w:"$\\frac{4\\cdot21}{7\\cdot8}=\\frac{84}{56}=\\frac{3}{2}$, con segno negativo perché i fattori hanno segni discordi: $-\\frac{3}{2}$."},
  {q:"Calcola i $\\frac{2}{3}$ di $\\frac{9}{10}$.",
-  o:["$\\frac{3}{5}$","$\\frac{20}{27}$","$\\frac{5}{3}$","$\\frac{11}{13}$"],c:0,type:"problema",
+  o:["$\\frac{20}{27}$","$\\frac{5}{3}$","$\\frac{11}{13}$","$\\frac{3}{5}$"],c:3,
   w:"$\\frac{2}{3}\\cdot\\frac{9}{10}=\\frac{18}{30}=\\frac{3}{5}$. Semplificando prima: 3 con 9 e 2 con 10, cioè $\\frac{1}{1}\\cdot\\frac{3}{5}$."},
  {q:"Calcola $\\frac{7}{6}\\cdot\\frac{3}{14}$.",
-  o:["$\\frac{1}{4}$","$\\frac{1}{2}$","$\\frac{1}{8}$","$\\frac{49}{9}$"],c:0,type:"problema",
+  o:["$\\frac{1}{2}$","$\\frac{1}{4}$","$\\frac{1}{8}$","$\\frac{49}{9}$"],c:1,
   w:"7 si semplifica con 14 e 3 con 6: $\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$. Direttamente sarebbe $\\frac{21}{84}$, che si riduce allo stesso valore."}
-],
-divisione:[
+ ],
+divisione: [
  {q:"Il quoziente $\\frac{a}{b}\\div\\frac{c}{d}$ è uguale a:",
   o:["$\\frac{a}{b}\\cdot\\frac{d}{c}$","$\\frac{a}{b}\\cdot\\frac{c}{d}$","$\\frac{b}{a}\\cdot\\frac{c}{d}$","$\\frac{a+d}{b+c}$"],c:0,
   w:"Si moltiplica il dividendo per il reciproco del divisore, ottenendo $\\frac{ad}{bc}$. Si ribalta il secondo termine, non il primo."},
  {q:"Perché la divisione si esegue moltiplicando per il reciproco?",
-  o:["È una conseguenza dell'esistenza dell'inverso moltiplicativo","È una regola mnemonica senza dimostrazione","Perché i denominatori si sommano","Perché la divisione è commutativa"],c:0,
+  o:["È una regola mnemonica senza dimostrazione","Perché i denominatori si sommano","È una conseguenza dell'esistenza dell'inverso moltiplicativo","Perché la divisione è commutativa"],c:2,
   w:"Da $\\frac{c}{d}\\cdot x=\\frac{a}{b}$, moltiplicando entrambi i membri per $\\frac{d}{c}$ si ottiene $x=\\frac{a}{b}\\cdot\\frac{d}{c}$. La regola è un teorema, non una convenzione."},
  {q:"La divisione $\\frac{a}{b}\\div\\frac{c}{d}$ è definita se e solo se:",
-  o:["$c\\neq0$","$a\\neq0$","$a>c$","$b=d$"],c:0,
+  o:["$a\\neq0$","$c\\neq0$","$a>c$","$b=d$"],c:1,
   w:"Serve che il divisore non sia nullo, cioè $c\\neq0$ (oltre a $b,d\\neq0$ perché siano frazioni). Lo zero è l'unico numero razionale privo di reciproco."},
  {q:"Dividendo per una frazione compresa fra 0 e 1 si ottiene un risultato:",
-  o:["maggiore del dividendo","minore del dividendo","uguale al dividendo","sempre intero"],c:0,
+  o:["minore del dividendo","uguale al dividendo","maggiore del dividendo","sempre intero"],c:2,
   w:"Una quantità piccola è contenuta molte volte in quella data: $\\frac{3}{4}\\div\\frac{1}{8}=6$. Dividere non significa necessariamente rimpicciolire."},
  {q:"La divisione fra numeri razionali è:",
-  o:["né commutativa né associativa","commutativa ma non associativa","associativa ma non commutativa","commutativa e associativa"],c:0,
+  o:["commutativa ma non associativa","associativa ma non commutativa","commutativa e associativa","né commutativa né associativa"],c:3,
   w:"Scambiando i termini si ottiene il reciproco del risultato; cambiando l'associazione si ottiene un valore diverso. Per questo, in assenza di parentesi, si procede da sinistra a destra."},
  {q:"Scambiando fra loro dividendo e divisore si ottiene:",
-  o:["il reciproco del quoziente","lo stesso quoziente","l'opposto del quoziente","sempre 1"],c:0,
+  o:["lo stesso quoziente","il reciproco del quoziente","l'opposto del quoziente","sempre 1"],c:1,
   w:"Se $\\frac{a}{b}\\div\\frac{c}{d}=\\frac{ad}{bc}$, scambiandoli si ottiene $\\frac{bc}{ad}$, cioè il reciproco. L'opposto riguarda invece il segno."},
  {q:"Una frazione complessa $\\dfrac{\\ \\frac{a}{b}\\ }{\\ \\frac{c}{d}\\ }$ indica:",
   o:["la divisione $\\frac{a}{b}\\div\\frac{c}{d}$","il prodotto delle due frazioni","la somma delle due frazioni","una scrittura priva di significato"],c:0,
   w:"La linea di frazione è, per definizione, un segno di divisione. La frazione complessa si risolve moltiplicando il numeratore per il reciproco del denominatore."},
  {q:"In una frazione complessa, la linea di frazione principale ha valore di:",
-  o:["parentesi su numeratore e denominatore","moltiplicazione","uguaglianza","nessun operatore"],c:0,
+  o:["moltiplicazione","uguaglianza","nessun operatore","parentesi su numeratore e denominatore"],c:3,
   w:"Tutto ciò che sta sopra e tutto ciò che sta sotto vanno calcolati separatamente, come se fossero racchiusi fra parentesi, e solo dopo si esegue la divisione."},
  {q:"Dividere $\\frac{a}{b}$ per un intero $n\\neq0$ equivale a:",
   o:["$\\frac{a}{bn}$","$\\frac{na}{b}$","$\\frac{a}{b+n}$","$\\frac{a-n}{b}$"],c:0,
   w:"$\\frac{a}{b}\\div n=\\frac{a}{b}\\cdot\\frac{1}{n}=\\frac{a}{bn}$: dividendo si aumenta il denominatore, cioè si tagliano le parti più piccole."},
  {q:"L'uguaglianza $\\frac{3}{4}\\div\\frac{1}{8}=6$ si legge:",
-  o:["$\\frac{1}{8}$ è contenuto 6 volte in $\\frac{3}{4}$","$\\frac{1}{8}$ di $\\frac{3}{4}$ vale 6","la somma di $\\frac{3}{4}$ e $\\frac{1}{8}$ vale 6","$\\frac{3}{4}$ diviso in 6 parti dà $\\frac{1}{8}$"],c:0,
+  o:["$\\frac{1}{8}$ di $\\frac{3}{4}$ vale 6","la somma di $\\frac{3}{4}$ e $\\frac{1}{8}$ vale 6","$\\frac{1}{8}$ è contenuto 6 volte in $\\frac{3}{4}$","$\\frac{3}{4}$ diviso in 6 parti dà $\\frac{1}{8}$"],c:2,
   w:"La divisione risponde alla domanda «quante volte il divisore sta nel dividendo»: in tre quarti stanno sei ottavi. È la lettura come misura."},
  {q:"Calcola $\\frac{3}{4}\\div\\frac{2}{5}$.",
-  o:["$\\frac{15}{8}$","$\\frac{3}{10}$","$\\frac{8}{15}$","$\\frac{5}{6}$"],c:0,type:"problema",
+  o:["$\\frac{15}{8}$","$\\frac{3}{10}$","$\\frac{8}{15}$","$\\frac{5}{6}$"],c:0,
   w:"$\\frac{3}{4}\\cdot\\frac{5}{2}=\\frac{15}{8}$. Il risultato è maggiore del dividendo perché il divisore è minore di 1. Il valore $\\frac{3}{10}$ si ottiene moltiplicando invece di dividere."},
  {q:"Calcola $\\frac{5}{6}\\div\\frac{10}{3}$.",
-  o:["$\\frac{1}{4}$","$\\frac{25}{9}$","$4$","$\\frac{5}{9}$"],c:0,type:"problema",
+  o:["$\\frac{25}{9}$","$4$","$\\frac{1}{4}$","$\\frac{5}{9}$"],c:2,
   w:"$\\frac{5}{6}\\cdot\\frac{3}{10}$: si semplifica a croce 5 con 10 e 3 con 6, restando $\\frac{1}{2}\\cdot\\frac{1}{2}=\\frac{1}{4}$."},
  {q:"Semplifica $\\dfrac{\\ \\frac{3}{5}\\ }{\\ \\frac{9}{10}\\ }$.",
-  o:["$\\frac{2}{3}$","$\\frac{27}{50}$","$\\frac{3}{2}$","$\\frac{6}{45}$"],c:0,type:"problema",
+  o:["$\\frac{27}{50}$","$\\frac{2}{3}$","$\\frac{3}{2}$","$\\frac{6}{45}$"],c:1,
   w:"$\\frac{3}{5}\\cdot\\frac{10}{9}=\\frac{30}{45}=\\frac{2}{3}$. Il valore $\\frac{27}{50}$ nasce dal moltiplicare le due frazioni anziché dividere."},
  {q:"Quante bottiglie da $\\frac{3}{8}$ di litro si riempiono con $\\frac{9}{4}$ di litro?",
-  o:["6","$\\frac{27}{32}$","$\\frac{3}{2}$","4"],c:0,type:"problema",
+  o:["$\\frac{27}{32}$","6","$\\frac{3}{2}$","4"],c:1,
   w:"$\\frac{9}{4}\\div\\frac{3}{8}=\\frac{9}{4}\\cdot\\frac{8}{3}=\\frac{72}{12}=6$ bottiglie esatte. È la lettura della divisione come misura."},
  {q:"Risolvi $\\frac{2}{7}\\cdot x=\\frac{4}{21}$.",
-  o:["$x=\\frac{2}{3}$","$x=\\frac{3}{2}$","$x=\\frac{8}{147}$","$x=\\frac{1}{3}$"],c:0,type:"problema",
+  o:["$x=\\frac{3}{2}$","$x=\\frac{8}{147}$","$x=\\frac{1}{3}$","$x=\\frac{2}{3}$"],c:3,
   w:"$x=\\frac{4}{21}\\div\\frac{2}{7}=\\frac{4}{21}\\cdot\\frac{7}{2}=\\frac{28}{42}=\\frac{2}{3}$. Il valore $\\frac{8}{147}$ si ottiene moltiplicando invece di dividere."}
-],
-potenza:[
+ ],
+potenza: [
  {q:"Per $n$ intero positivo, $\\left(\\frac{a}{b}\\right)^{n}$ vale:",
-  o:["$\\frac{a^{n}}{b^{n}}$","$\\frac{a^{n}}{b}$","$\\frac{an}{bn}$","$\\frac{a}{b^{n}}$"],c:0,
+  o:["$\\frac{a^{n}}{b}$","$\\frac{an}{bn}$","$\\frac{a}{b^{n}}$","$\\frac{a^{n}}{b^{n}}$"],c:3,
   w:"La potenza è un prodotto ripetuto e, per la regola del prodotto, l'esponente agisce sia sul numeratore sia sul denominatore. Elevare solo il numeratore è l'errore più comune."},
  {q:"Con $a\\neq0$, quanto vale $\\left(\\frac{a}{b}\\right)^{0}$?",
   o:["$1$","$0$","$\\frac{a}{b}$","non è definito"],c:0,
@@ -2261,54 +2261,54 @@ potenza:[
   o:["$\\left(\\frac{b}{a}\\right)^{n}$","$-\\left(\\frac{a}{b}\\right)^{n}$","$-\\left(\\frac{b}{a}\\right)^{n}$","$\\left(\\frac{a}{b}\\right)^{n}$"],c:0,
   w:"L'esponente negativo indica il reciproco della potenza: si ribalta la base e si cambia segno all'esponente. Il segno dell'esponente non influisce sul segno del risultato."},
  {q:"La proprietà $x^{m}\\cdot x^{n}$ dà:",
-  o:["$x^{m+n}$","$x^{mn}$","$x^{m-n}$","$(2x)^{m+n}$"],c:0,
+  o:["$x^{mn}$","$x^{m-n}$","$x^{m+n}$","$(2x)^{m+n}$"],c:2,
   w:"Con la stessa base gli esponenti si sommano, perché si accostano i fattori: $x^2\\cdot x^3$ sono in tutto cinque fattori uguali."},
  {q:"La potenza di potenza $\\left(x^{m}\\right)^{n}$ dà:",
-  o:["$x^{mn}$","$x^{m+n}$","$x^{m^{n}}$","$(mn)^{x}$"],c:0,
+  o:["$x^{m+n}$","$x^{mn}$","$x^{m^{n}}$","$(mn)^{x}$"],c:1,
   w:"Si moltiplicano gli esponenti: $\\left(x^{2}\\right)^{3}=x^{2}\\cdot x^{2}\\cdot x^{2}=x^{6}$. Da non confondere con il prodotto di potenze, dove si sommano."},
  {q:"Il prodotto di potenze con lo stesso esponente $x^{n}\\cdot y^{n}$ vale:",
-  o:["$(xy)^{n}$","$(x+y)^{n}$","$(xy)^{2n}$","$x^{n}+y^{n}$"],c:0,
+  o:["$(x+y)^{n}$","$(xy)^{n}$","$(xy)^{2n}$","$x^{n}+y^{n}$"],c:1,
   w:"Con lo stesso esponente si moltiplicano le basi. È utile per semplificare: $\\left(\\frac{2}{3}\\right)^{3}\\cdot\\left(\\frac{3}{5}\\right)^{3}=\\left(\\frac{2}{5}\\right)^{3}$."},
  {q:"Il segno di una potenza con base negativa dipende:",
-  o:["dalla parità dell'esponente","dal segno dell'esponente","dal valore del denominatore","da nulla: è sempre positivo"],c:0,
+  o:["dal segno dell'esponente","dal valore del denominatore","da nulla: è sempre positivo","dalla parità dell'esponente"],c:3,
   w:"Esponente pari dà risultato positivo, dispari negativo: $\\left(-\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$ mentre $\\left(-\\frac{2}{3}\\right)^{3}=-\\frac{8}{27}$."},
  {q:"$\\left(-\\frac{2}{3}\\right)^{2}$ e $-\\left(\\frac{2}{3}\\right)^{2}$:",
-  o:["sono opposti: $\\frac{4}{9}$ e $-\\frac{4}{9}$","sono uguali","sono entrambi negativi","il secondo non è definito"],c:0,
+  o:["sono uguali","sono entrambi negativi","il secondo non è definito","sono opposti: $\\frac{4}{9}$ e $-\\frac{4}{9}$"],c:3,
   w:"Nel primo caso il segno è dentro la parentesi e viene elevato; nel secondo resta fuori e non viene toccato dall'esponente. La parentesi non è decorativa."},
  {q:"Se $0<\\frac{a}{b}<1$, al crescere di $n$ le potenze $\\left(\\frac{a}{b}\\right)^{n}$:",
-  o:["decrescono avvicinandosi a 0","crescono illimitatamente","restano costanti","cambiano segno a ogni passo"],c:0,
+  o:["crescono illimitatamente","decrescono avvicinandosi a 0","restano costanti","cambiano segno a ogni passo"],c:1,
   w:"Ogni passo prende una frazione della quantità precedente, quindi il valore diminuisce: $\\frac{1}{2},\\frac{1}{4},\\frac{1}{8},\\dots$ Se invece la base è maggiore di 1 le potenze crescono."},
  {q:"Per la somma di potenze $x^{m}+x^{n}$:",
   o:["non esiste alcuna proprietà che la semplifichi come unica potenza","gli esponenti si sommano","gli esponenti si moltiplicano","si ottiene $x^{m+n}$"],c:0,
   w:"Le proprietà delle potenze riguardano prodotti e quozienti, non somme. $2^{2}+2^{3}=4+8=12$, che non è una potenza di 2."},
  {q:"Calcola $\\left(\\frac{2}{3}\\right)^{3}$.",
-  o:["$\\frac{8}{27}$","$\\frac{8}{9}$","$\\frac{2}{27}$","$\\frac{6}{9}$"],c:0,type:"problema",
+  o:["$\\frac{8}{9}$","$\\frac{2}{27}$","$\\frac{8}{27}$","$\\frac{6}{9}$"],c:2,
   w:"$\\frac{2^{3}}{3^{3}}=\\frac{8}{27}$. Le altre risposte derivano dall'elevare uno solo dei due termini, oppure dal moltiplicare per l'esponente."},
  {q:"Calcola $\\left(\\frac{3}{5}\\right)^{-2}$.",
-  o:["$\\frac{25}{9}$","$\\frac{9}{25}$","$-\\frac{9}{25}$","$\\frac{6}{25}$"],c:0,type:"problema",
+  o:["$\\frac{9}{25}$","$-\\frac{9}{25}$","$\\frac{25}{9}$","$\\frac{6}{25}$"],c:2,
   w:"Si ribalta la base: $\\left(\\frac{5}{3}\\right)^{2}=\\frac{25}{9}$. L'esponente negativo non rende negativo il risultato."},
  {q:"Calcola $\\left(-\\frac{2}{3}\\right)^{3}$.",
-  o:["$-\\frac{8}{27}$","$\\frac{8}{27}$","$-\\frac{2}{27}$","$-\\frac{6}{9}$"],c:0,type:"problema",
+  o:["$\\frac{8}{27}$","$-\\frac{2}{27}$","$-\\frac{8}{27}$","$-\\frac{6}{9}$"],c:2,
   w:"L'esponente è dispari, quindi il segno resta negativo: $-\\frac{2^{3}}{3^{3}}=-\\frac{8}{27}$."},
  {q:"Calcola $\\left(\\frac{1}{2}\\right)^{4}\\cdot\\left(\\frac{1}{2}\\right)^{-6}$.",
-  o:["$4$","$\\frac{1}{4}$","$\\frac{1}{1024}$","$-4$"],c:0,type:"problema",
+  o:["$\\frac{1}{4}$","$4$","$\\frac{1}{1024}$","$-4$"],c:1,
   w:"Stessa base: gli esponenti si sommano, $4+(-6)=-2$, quindi $\\left(\\frac{1}{2}\\right)^{-2}=2^{2}=4$."},
  {q:"Calcola $\\left(\\left(\\frac{2}{3}\\right)^{2}\\right)^{2}$.",
-  o:["$\\frac{16}{81}$","$\\frac{8}{27}$","$\\frac{4}{9}$","$\\frac{16}{9}$"],c:0,type:"problema",
-  w:"Gli esponenti si moltiplicano: $\\left(\\frac{2}{3}\\right)^{4}=\\frac{16}{81}$. Sommandoli si otterrebbe erroneamente l'esponente 4 solo per caso qui, ma la regola corretta è il prodotto $2\\cdot2$."},
-],
-espressioni:[
+  o:["$\\frac{16}{81}$","$\\frac{8}{27}$","$\\frac{4}{9}$","$\\frac{16}{9}$"],c:0,
+  w:"Gli esponenti si moltiplicano: $\\left(\\frac{2}{3}\\right)^{4}=\\frac{16}{81}$. Sommandoli si otterrebbe erroneamente l'esponente 4 solo per caso qui, ma la regola corretta è il prodotto $2\\cdot2$."}
+ ],
+espressioni: [
  {q:"L'ordine corretto di esecuzione è:",
-  o:["parentesi, potenze, prodotti e quozienti, somme e differenze","potenze, parentesi, somme, prodotti","sempre da sinistra a destra","prima somme e differenze, poi il resto"],c:0,
+  o:["potenze, parentesi, somme, prodotti","sempre da sinistra a destra","prima somme e differenze, poi il resto","parentesi, potenze, prodotti e quozienti, somme e differenze"],c:3,
   w:"È la gerarchia convenzionale delle operazioni. All'interno dello stesso livello si procede da sinistra a destra."},
  {q:"Quanto vale $12\\div3\\cdot2$?",
-  o:["8, perché a parità di priorità si procede da sinistra a destra","2, perché la moltiplicazione precede la divisione","18","l'espressione è ambigua"],c:0,
+  o:["2, perché la moltiplicazione precede la divisione","8, perché a parità di priorità si procede da sinistra a destra","18","l'espressione è ambigua"],c:1,
   w:"Moltiplicazione e divisione hanno la stessa priorità: si esegue prima $12\\div3=4$, poi $4\\cdot2=8$."},
  {q:"Moltiplicazione e divisione hanno:",
   o:["la stessa priorità","priorità maggiore per la moltiplicazione","priorità maggiore per la divisione","priorità inferiore all'addizione"],c:0,
   w:"Stesso livello, come accade fra addizione e sottrazione. L'ordine è quindi determinato dalla posizione, non dal tipo di operazione."},
  {q:"Le parentesi si sciolgono:",
-  o:["dalle più interne alle più esterne","dalle più esterne alle più interne","in ordine indifferente","solo dopo aver sviluppato tutte le potenze"],c:0,
+  o:["dalle più esterne alle più interne","dalle più interne alle più esterne","in ordine indifferente","solo dopo aver sviluppato tutte le potenze"],c:1,
   w:"Si parte dal nucleo più interno, perché il suo risultato serve al livello successivo. È lo stesso ordine mostrato dall'albero dell'espressione, che si calcola dal basso."},
  {q:"Un segno meno davanti a una parentesi:",
   o:["cambia il segno di tutti i termini interni","cambia il segno solo del primo termine","non ha effetto","si può ignorare se dentro c'è una somma"],c:0,
@@ -2317,33 +2317,33 @@ espressioni:[
   o:["ha valore di parentesi su numeratore e denominatore","si può ignorare","vale come parentesi solo per il numeratore","indica una moltiplicazione"],c:0,
   w:"Numeratore e denominatore vanno calcolati per intero prima di eseguire la divisione, anche se le parentesi non sono scritte esplicitamente."},
  {q:"Ogni divisione può sempre essere riscritta come:",
-  o:["prodotto per il reciproco","somma dell'opposto","potenza con esponente 2","differenza fra i termini"],c:0,
+  o:["somma dell'opposto","prodotto per il reciproco","potenza con esponente 2","differenza fra i termini"],c:1,
   w:"Riscrivere tutte le divisioni come prodotti riduce l'espressione a una sola operazione moltiplicativa e rende possibile semplificare prima di calcolare."},
  {q:"Conviene semplificare prima di eseguire i prodotti perché:",
-  o:["si lavora con numeri più piccoli e il risultato non cambia","altrimenti il risultato sarebbe sbagliato","è imposto dalla definizione di prodotto","altrimenti cambia il segno"],c:0,
+  o:["altrimenti il risultato sarebbe sbagliato","è imposto dalla definizione di prodotto","si lavora con numeri più piccoli e il risultato non cambia","altrimenti cambia il segno"],c:2,
   w:"È solo una questione di economia di calcolo: il numero razionale ottenuto è lo stesso, ma si evitano moltiplicazioni fra numeri grandi da semplificare alla fine."},
  {q:"In $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$ la prima operazione da eseguire è:",
-  o:["il prodotto $\\frac{2}{3}\\cdot\\frac{3}{4}$","la somma $\\frac{1}{2}+\\frac{2}{3}$","indifferente","la semplificazione di $\\frac{1}{2}$"],c:0,
+  o:["la somma $\\frac{1}{2}+\\frac{2}{3}$","indifferente","la semplificazione di $\\frac{1}{2}$","il prodotto $\\frac{2}{3}\\cdot\\frac{3}{4}$"],c:3,
   w:"La moltiplicazione ha priorità sull'addizione e non ci sono parentesi che la modifichino. Il risultato è $\\frac{1}{2}+\\frac{1}{2}=1$."},
  {q:"Un buon controllo finale di un'espressione è:",
   o:["una stima decimale rapida del risultato","verificare che il risultato sia intero","controllare che il denominatore sia pari","assicurarsi che il numeratore sia primo"],c:0,
   w:"Se ci si attende un valore vicino a 0,4 e si ottiene 4, l'errore è quasi sempre un reciproco dimenticato o una parentesi trascurata. Il risultato va poi consegnato ridotto ai minimi termini."},
  {q:"Calcola $\\frac{1}{2}+\\frac{2}{3}\\cdot\\frac{3}{4}$.",
-  o:["$1$","$\\frac{7}{8}$","$\\frac{5}{4}$","$\\frac{1}{2}$"],c:0,type:"problema",
+  o:["$\\frac{7}{8}$","$\\frac{5}{4}$","$1$","$\\frac{1}{2}$"],c:2,
   w:"Prima il prodotto: $\\frac{2}{3}\\cdot\\frac{3}{4}=\\frac{1}{2}$; poi $\\frac{1}{2}+\\frac{1}{2}=1$. Il valore $\\frac{7}{8}$ si ottiene eseguendo per prima la somma, che qui non ha la priorità."},
  {q:"Calcola $\\left(\\frac{1}{2}+\\frac{1}{3}\\right)\\div\\frac{5}{6}$.",
-  o:["$1$","$\\frac{25}{36}$","$\\frac{5}{9}$","$\\frac{36}{25}$"],c:0,type:"problema",
+  o:["$\\frac{25}{36}$","$\\frac{5}{9}$","$1$","$\\frac{36}{25}$"],c:2,
   w:"Parentesi a frazione unica ($m=6$): $\\frac{1}{2}+\\frac{1}{3}=\\frac{1\\cdot 3+1\\cdot 2}{6}=\\frac{5}{6}$, quindi $\\frac{5}{6}\\div\\frac{5}{6}=\\frac{5}{6}\\cdot\\frac{6}{5}=1$. Il valore $\\frac{25}{36}$ si ottiene moltiplicando invece di dividere."},
  {q:"Calcola $\\left(\\frac{2}{3}\\right)^{2}-\\frac{1}{9}$.",
-  o:["$\\frac{1}{3}$","$\\frac{5}{9}$","$\\frac{1}{9}$","$\\frac{4}{3}$"],c:0,type:"problema",
+  o:["$\\frac{5}{9}$","$\\frac{1}{9}$","$\\frac{4}{3}$","$\\frac{1}{3}$"],c:3,
   w:"$\\left(\\frac{2}{3}\\right)^{2}=\\frac{4}{9}$; denominatori già uguali, quindi $\\frac{4}{9}-\\frac{1}{9}=\\frac{4-1}{9}=\\frac{3}{9}=\\frac{1}{3}$. Ricorda di ridurre sempre il risultato finale."},
  {q:"Calcola $\\left[\\left(\\frac{3}{4}-\\frac{1}{2}\\right)\\cdot\\frac{4}{3}\\right]+\\frac{1}{3}$.",
-  o:["$\\frac{2}{3}$","$\\frac{1}{3}$","$\\frac{5}{12}$","$\\frac{7}{12}$"],c:0,type:"problema",
+  o:["$\\frac{1}{3}$","$\\frac{5}{12}$","$\\frac{2}{3}$","$\\frac{7}{12}$"],c:2,
   w:"Tonda ($m=4$): $\\frac{3}{4}-\\frac{1}{2}=\\frac{3\\cdot 1-1\\cdot 2}{4}=\\frac{1}{4}$; quadra: $\\frac{1}{4}\\cdot\\frac{4}{3}=\\frac{1}{3}$; somma finale: $\\frac{1}{3}+\\frac{1}{3}=\\frac{1+1}{3}=\\frac{2}{3}$."},
  {q:"Calcola $\\left(\\frac{1}{2}-\\frac{1}{3}\\right)^{-1}$.",
-  o:["$6$","$\\frac{1}{6}$","$-6$","$\\frac{5}{6}$"],c:0,type:"problema",
+  o:["$\\frac{1}{6}$","$6$","$-6$","$\\frac{5}{6}$"],c:1,
   w:"Parentesi a frazione unica ($m=6$): $\\frac{1}{2}-\\frac{1}{3}=\\frac{1\\cdot 3-1\\cdot 2}{6}=\\frac{1}{6}$; poi l'esponente $-1$, che indica il reciproco: $6$. L'esponente negativo non cambia il segno del risultato."}
-]
+ ]
 };
 
 /* ============================================================
@@ -2610,7 +2610,7 @@ function buildTabs(){
   tabsEl.innerHTML="";
   AREAS.forEach((ar,i)=>{
     const b=document.createElement("button");
-    b.className="tab";b.type="button";b.textContent=ar.title;
+    b.className="tab";b.type="button";b.setAttribute("role","tab");b.textContent=ar.title;
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected",i===CUR.a?"true":"false");
     b.addEventListener("click",()=>{ CUR={a:i,s:0}; render(true); });
@@ -2622,7 +2622,7 @@ function buildSub(){
   subEl.innerHTML="";
   ar.sub.forEach((s,i)=>{
     const b=document.createElement("button");
-    b.className="subtab";b.type="button";b.textContent=s.label;
+    b.className="subtab";b.type="button";b.setAttribute("role","tab");b.textContent=s.label;
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected",i===CUR.s?"true":"false");
     b.addEventListener("click",()=>{ CUR.s=i; render(true); });
